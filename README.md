@@ -1,2 +1,2 @@
 # snapAnalysis
-My N-body simulation snapshot analysis package
+An N-body simulation snapshot analysis package.

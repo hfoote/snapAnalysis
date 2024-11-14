@@ -63,7 +63,49 @@ class snap:
 							'PsiIm':u.dimensionless_unscaled
 							}
 
-			
+	def print_structure(self):
+		'''Displays the file structure of the snapshot.
+		'''
+		print('File structure of '+self.filename)
+		with h5py.File(self.filename, 'r') as f:
+			names = f.keys() # get group names
+			for name in names:
+				print('\nGROUP: '+ name) # print group name
+
+				print('KEYS:')
+				attList = f[name].attrs.keys()
+				for atr in attList: # print all attributes in that group
+					print('       '+atr)
+
+				print('DATA SETS:')
+				dataList = f[name]
+				for data in dataList:
+					print('       '+data)
+
+	def print_header(self):
+		'''Displays all info contained in the header of the snapshot.
+
+		'''
+		print('___________________________________________')
+		print('Header of '+self.filename)
+		with h5py.File(self.filename, 'r') as f:
+			try: # open header, if it doesn't work, there is no header
+				head = f['Header']
+			except KeyError:
+				print("Either the header does not have the name 'Header' or it does not exist.")
+				raise
+			# print each key and what it contains
+			print('\nKEYS')
+			print('--------')
+			attList = head.attrs.keys()
+			for atr in attList: # print all attributes in the header, with their contents
+				print(atr+':',head.attrs[atr])
+
+			print('\nDATA SETS')
+			print('--------')
+			for data in head: # print all data sets in the header, with their contents
+				print(data+':',head[data])
+				
 	def read_field(self, ptype:int, field:str) -> np.ndarray:
 		'''read_field returns one data field of one particle type 
 
@@ -173,7 +215,7 @@ class snap:
 
 	def get_FDM_velocities(self) -> None:
 		'''Calculates the FDM velocity field based on the wavefunction outputs, via the phase gradient method:
-		v = hbar/m gradient(phase)
+		v = hbar/m gradient(phase). Based on code from Philip Mocz
 		'''
 
 		self.get_particle_data(1, ['ParticleIDs', 'Coordinates', 'PsiRe', 'PsiIm'])
@@ -203,7 +245,7 @@ class snap:
 		psi = psi[IDsort]
 		psi = np.reshape(psi, (self.N_cells, self.N_cells, self.N_cells), order='F')
 
-		# phase gradient approach, following Philip's code
+		# phase gradient approach, following Philip Mocz's code
 		phase = np.angle(psi)
 
 		# roll arrays for finite differencing

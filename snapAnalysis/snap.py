@@ -40,20 +40,20 @@ class snap:
 
 		with h5py.File(self.filename, 'r') as f:
 
-			if 'BECDM' in f['Config'].attrs().keys():
+			if 'BECDM' in f['Config'].attrs.keys():
 				self.fdm = True
 				self.N_cells = int(f['Config'].attrs['PMGRID'])
 				self.m_axion_Ev = f['Parameters'].attrs['AxionMassEv']*u.eV 
 
-			self.vel_unit = (f['Parameters'].attrs('UnitVelocity_in_cm_per_s')*u.cm/u.s).to(u.km/u.s)
-			self.length_unit = (f['Parameters'].attrs('UnitLength_in_cm')*u.cm).to(u.kpc)
-			self.mass_unit = (f['Parameters'].attrs('UnitMass_in_g')*u.g).to(u.Msun)
+			self.vel_unit = (f['Parameters'].attrs['UnitVelocity_in_cm_per_s']*u.cm/u.s).to(u.km/u.s)
+			self.length_unit = (f['Parameters'].attrs['UnitLength_in_cm']*u.cm).to(u.kpc)
+			self.mass_unit = (f['Parameters'].attrs['UnitMass_in_g']*u.g).to(u.Msun)
 			self.time_unit = (self.length_unit / self.vel_unit).to(u.Gyr)
 			
 			self.box_size = f['Header'].attrs['BoxSize']
 			self.box_half = self.box_size/2.
 			self.time = f['Header'].attrs['Time']*self.time_unit
-			self.N_types = f['Header'].attrs['NumPart_ThisFile']
+			self.N = f['Header'].attrs['NumPart_ThisFile'][ptype]
 
 		self.G = const.G.to(self.length_unit * self.vel_unit**2 / self.mass_unit)
 		self.field_units = {'Coordinates':self.length_unit, 
@@ -138,7 +138,7 @@ class snap:
 		'''
 
 		with h5py.File(self.filename, 'r') as f:
-			masstable = f['Header'].attrs['MassTable'][self.ptype] * self.mass_unit
+			masstable = f['Header'].attrs['MassTable'][self.ptype]
 
 		return masstable
 	
@@ -219,7 +219,7 @@ class snap:
 					try:
 						self.data_fields[field] = self.read_field(field) * self.mass_unit
 					except KeyError: 
-						self.data_fields[field] = np.full(self.N_types, self.read_masstable()) * self.mass_unit
+						self.data_fields[field] = np.full(self.N, self.read_masstable()) * self.mass_unit
 
 			else:
 				self.data_fields[field] = self.read_field(field) * self.field_units[field]
@@ -240,15 +240,15 @@ class snap:
 		# sort and reshape IDs and positions to their final forms
 		IDs = self.data_fields['ParticleIDs']
 		IDs = np.reshape(IDs, (self.N_cells, self.N_cells, self.N_cells), order='F')
-		IDs = np.reshape(IDs, (self.N_types[1],), order='F')
+		IDs = np.reshape(IDs, (self.N,), order='F')
 		# do the same with positions
 		pos = self.data_fields['Coordinates']
 		pos = np.reshape(pos, (self.N_cells, self.N_cells, self.N_cells,3), order='F')
 		dx = pos[0,1,0,0] - pos[0,0,0,0] # cell spacing
 		
-		pos_x = np.reshape(pos[:,:,:,0], (self.N_types[1], 1), order='F') # reshape back to snapshot shape
-		pos_y = np.reshape(pos[:,:,:,1], (self.N_types[1], 1), order='F')
-		pos_z = np.reshape(pos[:,:,:,2], (self.N_types[1], 1), order='F')
+		pos_x = np.reshape(pos[:,:,:,0], (self.N, 1), order='F') # reshape back to snapshot shape
+		pos_y = np.reshape(pos[:,:,:,1], (self.N, 1), order='F')
+		pos_z = np.reshape(pos[:,:,:,2], (self.N, 1), order='F')
 		pos = np.concatenate([pos_x, pos_y, pos_z], axis=1)
 
 		# get psi into a single complex number and reshape it to look like the box
@@ -278,9 +278,9 @@ class snap:
 		vz = (vz / (2.*dx) / m * const.hbar).to(self.vel_unit)
 	
 		# get velocities back into the same shape as they're output
-		vel_x = np.reshape(vx, (self.N_types[1],1), order='F') # reshape back to snapshot shape
-		vel_y = np.reshape(vy, (self.N_types[1],1), order='F')
-		vel_z = np.reshape(vz, (self.N_types[1],1), order='F')
+		vel_x = np.reshape(vx, (self.N,1), order='F') # reshape back to snapshot shape
+		vel_y = np.reshape(vy, (self.N,1), order='F')
+		vel_z = np.reshape(vz, (self.N,1), order='F')
 		
 		self.data_fields['Velocities'] = np.concatenate([vel_x, vel_y, vel_z], axis=1)
 
@@ -302,10 +302,10 @@ class snap:
 		'''
 
 		assert self.check_if_field_read('Coordinates'), "Particle positions not loaded!"
-		self.data_fields['Coordinates'] -= pos_center[:,None]
+		self.data_fields['Coordinates'] -= pos_center[None, :]
 
 		if vel_center != None:
 			assert self.check_if_field_read('Velocities'), "Particle velocities not loaded!"
-			self.data_fields['Velocities'] -= vel_center[:,None]
+			self.data_fields['Velocities'] -= vel_center[None, :]
 
 	

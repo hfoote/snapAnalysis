@@ -160,7 +160,6 @@ class snap:
 		if self.data_fields[field] == None:
 			return False
 		return True
-	
 
 	def arrange_fields(self, indices:np.ndarray) -> None:
 		'''arrange_fields re-arranges all existing data fields according to the input indices.
@@ -178,23 +177,21 @@ class snap:
 			self.data_fields[field] = self.data_fields[field][indices]
 
 	def select_particles(self, ID_range:tuple) -> None:
-		'''select_particles sorts all existing data fields by ID and selects the desired ID range 
+		'''select_particles selects the desired ID range 
 
 		Parameters
 		----------
 		ID_range : tuple
-			min and max ID values to keep
+			min and max ID values to keep (inclusive)
 		'''
 
-		self.get_particle_data('ParticleIDs')
-		self.arrange_fields(np.argsort(self.data_fields['ParticleIDs']))
+		IDs = self.load_particle_data('ParticleIDs')
 
 		for field in self.data_fields.keys():
-			self.data_fields[field] = self.data_fields[field][ID_range[0]:ID_range[1]]
+			self.data_fields[field] = self.data_fields[field][np.where((IDs >= ID_range[0]) & (IDs <= ID_range[1]))]
 
-
-	def get_particle_data(self, fields:list) -> None:
-		'''get_particle_data reads particle data for a field if it doesn't already exist
+	def load_particle_data(self, fields:list) -> None:
+		'''load_particle_data reads particle data for a field if it doesn't already exist
 
 		Parameters
 		----------
@@ -232,7 +229,7 @@ class snap:
 		v = hbar/m gradient(phase). Based on code from Philip Mocz
 		'''
 
-		self.get_particle_data(1, ['ParticleIDs', 'Coordinates', 'PsiRe', 'PsiIm'])
+		self.load_particle_data(1, ['ParticleIDs', 'Coordinates', 'PsiRe', 'PsiIm'])
 
 		m = self.m_axion_ev	/ const.c**2
 
@@ -287,3 +284,28 @@ class snap:
 		
 		self.data_fields['Velocities'] = np.concatenate([vel_x, vel_y, vel_z], axis=1)
 
+	def read_all(self) -> None:
+		'''read_all wrapper to load all "standard" fields (IDs, pos, vel, mass)
+		'''
+
+		self.load_particle_data(['ParticleIDs', 'Coordinates', 'Velocities', 'Masses'])
+
+	def apply_center(self, pos_center:np.ndarray, vel_center:np.ndarray=None) -> None:
+		'''center_particles centers particles on a specified center in position and velocity
+
+		Parameters
+		----------
+		pos_center : np.ndarray
+			[x, y, z] Position center
+		vel_center : None or np.ndarray, optional
+			[vx, vy, vz] Velocity center
+		'''
+
+		assert self.check_if_field_read('Coordinates'), "Particle positions not loaded!"
+		self.data_fields['Coordinates'] -= pos_center[:,None]
+
+		if vel_center != None:
+			assert self.check_if_field_read('Velocities'), "Particle velocities not loaded!"
+			self.data_fields['Velocities'] -= vel_center[:,None]
+
+	

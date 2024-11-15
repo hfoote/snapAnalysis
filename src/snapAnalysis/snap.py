@@ -8,20 +8,23 @@ from astropy import units as u
 from astropy import constants as const
 
 class snap:
-	''' The main class of snapAnalysis, which reads and stores a single gagdet/arepo format hdf5 snapshot. 
+	''' The main class of snapAnalysis, which reads and stores a single particle type from a single gagdet/arepo format hdf5 snapshot. 
 	Methods provide common analysis routines such as computing density fields, centering, rotations, etc.
 	'''
 
-	def __init__(self, filename:str) -> None:
+	def __init__(self, filename:str, ptype:int) -> None:
 		'''__init__ creates a snap object and stores useful metadata.
 
 		Parameters
 		----------
 		filename : str
 			Name of the simulation snapshot to read
+		ptype : int
+			Integer particle type 
 		'''
 
 		self.filename = filename
+		self.ptype = ptype
 		self.fdm = False
 
 		# keep data fields empty until populated later
@@ -106,13 +109,11 @@ class snap:
 			for data in head: # print all data sets in the header, with their contents
 				print(data+':',head[data])
 				
-	def read_field(self, ptype:int, field:str) -> np.ndarray:
+	def read_field(self, field:str) -> np.ndarray:
 		'''read_field returns one data field of one particle type 
 
 		Parameters
 		----------
-		ptype : int
-			particle type
 		field : str
 			data field
 
@@ -123,7 +124,7 @@ class snap:
 		'''
 
 		with h5py.File(self.filename, 'r') as f:
-			data = np.array(f[f'PartType{ptype}/{field}'])
+			data = np.array(f[f'PartType{self.ptype}/{field}'])
 
 		return data
 	
@@ -137,7 +138,7 @@ class snap:
 		'''
 
 		with h5py.File(self.filename, 'r') as f:
-			masstable = f['Header'].attrs['MassTable'] * self.mass_unit
+			masstable = f['Header'].attrs['MassTable'][self.ptype] * self.mass_unit
 
 		return masstable
 	
@@ -176,14 +177,27 @@ class snap:
 				continue
 			self.data_fields[field] = self.data_fields[field][indices]
 
+	def select_particles(self, ID_range:tuple) -> None:
+		'''select_particles sorts all existing data fields by ID and selects the desired ID range 
 
-	def get_particle_data(self, ptype:int, fields:list) -> None:
+		Parameters
+		----------
+		ID_range : tuple
+			min and max ID values to keep
+		'''
+
+		self.get_particle_data('ParticleIDs')
+		self.arrange_fields(np.argsort(self.data_fields['ParticleIDs']))
+
+		for field in self.data_fields.keys():
+			self.data_fields[field] = self.data_fields[field][ID_range[0]:ID_range[1]]
+
+
+	def get_particle_data(self, fields:list) -> None:
 		'''get_particle_data reads particle data for a field if it doesn't already exist
 
 		Parameters
 		----------
-		ptype : int
-			particle type 
 		fields : list
 			list containing desired data fields, e.g.
 			['Coordinates', 'Velocities', 'ParticleIDs', 'Masses', 'Potential', 'Acceleration', 'PsiRe', 'PsiIm']
@@ -195,23 +209,23 @@ class snap:
 
 			# special cases for FDM
 			if ((field == 'PsiRe') or (field == 'PsiIm')):
-				assert (self.fdm and ptype == 1), "Non-FDM particle types do not contain wavefunction data!"
+				assert (self.fdm and self.ptype == 1), "Non-FDM particle types do not contain wavefunction data!"
 			
-			if (field == 'Velocity') and (ptype == 1) and self.fdm:
+			if (field == 'Velocity') and (self.ptype == 1) and self.fdm:
 				self.data_fields[field] = self.get_FDM_velocities()
 
 			# special case for masses, populate mass array from masstable or wavefunction if necessary
 			if field == 'Masses':
-				if (ptype == 1) and self.fdm:
-					self.data_fields[field] = np.abs(self.read_field(ptype, 'PsiRe')**2 + self.read_field(ptype, 'PsiIm')**2) * self.mass_unit / self.length_unit**3
+				if (self.ptype == 1) and self.fdm:
+					self.data_fields[field] = np.abs(self.read_field('PsiRe')**2 + self.read_field('PsiIm')**2) * self.mass_unit / self.length_unit**3
 				else:
 					try:
-						self.data_fields[field] = self.read_field(ptype, field) * self.mass_unit
+						self.data_fields[field] = self.read_field(field) * self.mass_unit
 					except KeyError: 
-						self.data_fields[field] = np.full(self.N_types[ptype], self.read_masstable()[ptype]) * self.mass_unit
+						self.data_fields[field] = np.full(self.N_types, self.read_masstable()) * self.mass_unit
 
 			else:
-				self.data_fields[field] = self.read_field(ptype, field) * self.field_units[field]
+				self.data_fields[field] = self.read_field(field) * self.field_units[field]
 
 	def get_FDM_velocities(self) -> None:
 		'''Calculates the FDM velocity field based on the wavefunction outputs, via the phase gradient method:
@@ -273,11 +287,3 @@ class snap:
 		
 		self.data_fields['Velocities'] = np.concatenate([vel_x, vel_y, vel_z], axis=1)
 
-
-
-
-
-
-
-
-				

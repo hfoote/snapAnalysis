@@ -20,10 +20,6 @@ def com_define(m:np.ndarray, pos:np.ndarray) -> np.ndarray:
 		[x, y, z] center of mass
 	'''
 
-	M = np.sum(m)
+	tot_m = np.sum(m)
 
-	a_com = np.sum(pos[0]*m)/M
-	b_com = np.sum(pos[1]*m)/M
-	c_com = np.sum(pos[2]*m)/M
-
-	return a_com, b_com, c_com
+	return np.sum(pos * m[:, None] / tot_m, axis=0)

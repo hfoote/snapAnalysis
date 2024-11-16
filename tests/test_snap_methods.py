@@ -1,4 +1,4 @@
-# tests for the I/O functionality of snap objects
+# tests for the functionality of snap objects
 # requires the example snapshot test_snap.hdf5
 
 from snapAnalysis.snap import snap
@@ -45,4 +45,25 @@ def test_check_if_field_read() -> None:
 	assert snap_obj.check_if_field_read('Coordinates'), "Coordinates have already been loaded, test failed!"
 	assert not snap_obj.check_if_field_read('Velocities'), "Velocities have not yet been loaded, test failed!"
 
+	return None
+
+def test_centering() -> None:
+	
+	# separate test for each centering routine
+	test_kwargs = {'vol_dec':2.}
+	com = snap_obj.find_position_center(**test_kwargs)
+	assert np.allclose(com, np.array([0.11066814, -0.01628367,  0.42120691])*u.kpc), \
+		"Position center calculation failed!"
+	assert np.allclose(snap_obj.find_velocity_center(com), np.array([-2.337177, -0.104841, -1.221633])*u.km/u.s), \
+		"Velocity center calculation failed!"
+
+	snap_obj.find_and_apply_center(com_kwargs=test_kwargs)
+	
+	assert np.allclose(snap_obj.data_fields['Coordinates'][0], 
+					   np.sum(np.array([[-34.63336945, -66.06946564, 172.63697815], [-0.110668, 0.016284, -0.421207]]), axis=0)*u.kpc), \
+					   "Position centering failed!"
+	assert np.allclose(snap_obj.data_fields['Velocities'][0], 
+					   np.sum(np.array([[1.14670885, -28.27835464, -46.99738312], [2.337177, 0.104841, 1.221633]]), axis=0)*u.km/u.s), \
+					   "Velocity centering failed!"
+	
 	return None

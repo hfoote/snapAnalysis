@@ -6,6 +6,8 @@ import h5py
 import astropy
 from astropy import units as u
 from astropy import constants as const
+from snapAnalysis import utils
+import warnings
 
 class snap:
 	''' The main class of snapAnalysis, which reads and stores a single particle type from a single gagdet/arepo format hdf5 snapshot. 
@@ -308,4 +310,104 @@ class snap:
 			assert self.check_if_field_read('Velocities'), "Particle velocities not loaded!"
 			self.data_fields['Velocities'] -= vel_center[None, :]
 
+	def find_position_center(self, vol_dec:float=3., delta:float=0.01, N_min:int=1000) -> np.ndarray:
+		'''find_position_center finds the center of mass of the snapshot via the shrinking-spheres method.
+
+		Parameters
+		----------
+		vol_dec : float, optional
+			Factor by which the sphere radius is reduced during an iteration, by default 3.
+		delta : float, optional
+			Tolerance, stop when change in COM is less than delta, by default 0.01
+		Nmin : int, optional
+			Minimum number of particles allowed within the sphere, by default 1000
+
+		Returns
+		-------
+		np.ndarray
+			[x, y, z] center of mass
+		'''
+		self.load_particle_data(['Masses', 'Coordinates'])
+
+		# initial guess using every particle
+		com = utils.com_define(self.data_fields['Masses'], self.data_fields['Coordinates'])
+		r_COM = np.sqrt(np.sum(com**2))
+
+		# make temp coordinates with respect to COM
+		pos_new = self.data_fields['Coordinates'] - com[None, :]
+		r_new = np.sqrt(np.sum(pos_new**2, axis=1))
+
+		# shrink sphere
+		r_max = max(r_new)/vol_dec
+		change = 1000.0 # initialize change
+
+		while (change > delta):
+			# all particles within the reduced radius, starting from original coordinates
+			index2 = np.where(r_new <= r_max)
+			pos2 = self.data_fields['Coordinates'][index2]
+			m2 = self.data_fields['Masses'][index2]
+
+			# recompute with particles in reduced radius
+			com2 = utils.com_define(m2, pos2)
+			r_COM2 = np.sqrt(np.sum(com2**2))
+
+			if len(m2) < N_min:
+				warnings.warn("COM: Minimum number of particles reached before COM converged.")
+				return com2
+                                                                                    
+			change = np.abs(r_COM - r_COM2).value                                                                                                                                                                    
+
+			# Before loop continues, reset rmax, particle separations, and COM                                                                                                     
+			r_max /= vol_dec                                                                          
+			
+			pos_new = self.data_fields['Coordinates'] - com2[None, :]
+			r_new = np.sqrt(np.sum(pos_new**2, axis=1))
+                                                  
+			com = com2
+			r_COM = r_COM2
+
+		return com
 	
+	def find_velocity_center(self, pos_center:np.ndarray, r_max:u.Quantity=15.0*u.kpc) -> np.ndarray:
+		'''find_velocity_center finds the COM velocity using particles within r_max.
+
+		Parameters
+		----------
+		pos_center : np.ndarray
+			[x, y, z] center of mass position
+		r_max : u.Quantity, optional
+			max distance from COM to use particles for the calculation, by default 15.0*u.kpc
+
+		Returns
+		-------
+		np.ndarray
+			[vx, vy, vz] COM velocity
+		'''
+
+		self.load_particle_data(['Masses', 'Coordinates', 'Velocities'])
+
+		pos_new = self.data_fields['Coordinates'] - pos_center[None, :]
+		r_new = np.sqrt(np.sum(pos_new**2, axis=1))
+
+		index = np.where(r_new <= r_max)
+		vel = self.data_fields['Velocities'][index]
+		m = self.data_fields['Masses'][index]
+		
+		return utils.com_define(m, vel)
+	
+	def find_and_apply_center(self, com_kwargs:dict={}, vel_kwargs:dict={}) -> None:
+		'''find_and_apply_center Calculates the positions and velocity center
+		of the snapshot and centers the particle data on the COM location in phase-space. 
+
+		Parameters
+		----------
+		com_kwargs : dict, optional
+			kwargs for snap.find_position_center
+		vel_kwargs : dict, optional
+			kwargs for snap.find_velocity_center
+		'''
+
+		com_pos = self.find_position_center(**com_kwargs)
+		com_vel = self.find_velocity_center(com_pos, **vel_kwargs)
+
+		self.apply_center(com_pos, com_vel)

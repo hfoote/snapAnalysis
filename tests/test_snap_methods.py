@@ -67,3 +67,12 @@ def test_centering() -> None:
 					   "Velocity centering failed!"
 	
 	return None
+
+def test_select_particles() -> None:
+
+	min_id = 1000
+	max_id = 2000
+	snap_obj.select_particles((min_id, max_id))
+	assert (snap_obj.data_fields['ParticleIDs'] >= min_id).all(), "Particle ID selection lower limit failed!"
+	assert (snap_obj.data_fields['ParticleIDs'] <= max_id).all(), "Particle ID selection upper limit failed!"
+	assert (len(snap_obj.data_fields['ParticleIDs']) == (max_id - min_id +1)), "Particle ID selection failed!"

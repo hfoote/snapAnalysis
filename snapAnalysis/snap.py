@@ -187,9 +187,12 @@ class snap:
 			min and max ID values to keep (inclusive)
 		'''
 
-		IDs = self.load_particle_data('ParticleIDs')
+		self.load_particle_data(['ParticleIDs'])
+		IDs = self.data_fields['ParticleIDs']
 
 		for field in self.data_fields.keys():
+			if not self.check_if_field_read(field):
+				continue
 			self.data_fields[field] = self.data_fields[field][np.where((IDs >= ID_range[0]) & (IDs <= ID_range[1]))]
 
 	def load_particle_data(self, fields:list) -> None:

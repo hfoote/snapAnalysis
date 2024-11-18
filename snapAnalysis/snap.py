@@ -412,7 +412,7 @@ class snap:
 
 		self.apply_center(com_pos, com_vel)
 
-	def density_projection(self, axis:int=2, bins=int|list[200,200], mass_weight:bool=False, plot:bool=True, 
+	def density_projection(self, axis:int=2, bins:int|list=[200,200], mass_weight:bool=False, plot:bool=True, 
 						   plot_name:bool|str=False, slice_width:bool|float=False, overdensity:bool=False) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
 		'''density_projection generates a density histogram projected along the specified
 		axis. 
@@ -461,7 +461,7 @@ class snap:
 		else:
 			weights = None
 
-		dens, xbins, ybins = np.histogram2d(pos[:,j], pos[:,i], bins=bins, weights=weights)
+		dens, xbins, ybins = np.histogram2d(pos[:,j].value, pos[:,i].value, bins=bins, weights=weights)
 
 		# compute the overdensity if desired
 		if overdensity:
@@ -510,14 +510,14 @@ class snap:
 
 		bins = np.linspace(rmin, rmax, nbins+1)
 
-		r = np.sqrt(np.sum(pos**2), axis=1)
+		r = np.sqrt(np.sum(pos**2, axis=1))
 
 		shell_volume = 4./3. * np.pi * (bins[1:]**3 - bins[:-1]**3)
 
-		hist, edges = np.histogram(r, bins=bins, weights=m)
+		hist, edges = np.histogram(r.to(u.kpc).value, bins=bins, weights=m.to(u.Msun).value)
 		rho = hist/shell_volume
 
-		bin_centers = (bins[1:] - bins[:-1])/2.
+		bin_centers = (bins[1:] + bins[:-1])/2.
 
 		if plot:
 			plt.plot(bin_centers, rho)

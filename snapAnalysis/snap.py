@@ -292,7 +292,7 @@ class snap:
 
 		self.load_particle_data(['ParticleIDs', 'Coordinates', 'Velocities', 'Masses'])
 
-	def apply_center(self, pos_center:np.ndarray, vel_center:np.ndarray=None) -> None:
+	def apply_center(self, pos_center:np.ndarray, vel_center:np.ndarray|None=None) -> None:
 		'''center_particles centers particles on a specified center in position and velocity
 
 		Parameters
@@ -411,3 +411,132 @@ class snap:
 		com_vel = self.find_velocity_center(com_pos, **vel_kwargs)
 
 		self.apply_center(com_pos, com_vel)
+
+	def density_projection(self, axis:int=2, bins=int|list[200,200], mass_weight:bool=False, plot:bool=True, 
+						   plot_name:bool|str=False, slice_width:bool|float=False, overdensity:bool=False) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+		'''density_projection generates a density histogram projected along the specified
+		axis. 
+
+		Parameters
+		----------
+		axis : int, optional
+			Axis to project along (x=0, y=1, z=2), by default 2
+		bins : int or list, optional
+			bin specification passed to np.histogram, by default [200,200]
+		mass_weight : bool, optional
+			weight particles by their mass, by default False
+		plot : bool, optional
+			create a plot of the density histogram, by default True
+		plot_name : bool or str, optional
+			if not False, saves the plot under this file name, by default False
+		slice_width : int, optional
+			Leave as 0 to use the whole box. Otherwise, provide a distance in the length units of the snapshot 
+	        from the midplane along the specified axis to include., by default 0
+		overdensity : bool, optional
+			Return density array as the "overdensity," otherwise return the log of the actual density, by default False
+
+		Returns
+		-------
+		np.ndarray :
+			Density histogram 
+		np.ndarray :
+			x bin edges
+		np.ndarray : 
+			y bin edges
+		'''
+
+		self.load_particle_data(['Coordinates', 'Masses'])
+		pos = self.data_fields['Coordinates']
+		m = self.data_fields['Masses']
+
+		i, j = utils.set_axes(axis)
+
+		if slice_width:
+			slice = utils.get_vslice_indices(pos, slice_width, axis)
+			pos = pos[slice]
+			m = m[slice]
+
+		if mass_weight:
+			weights = m.value
+		else:
+			weights = None
+
+		dens, xbins, ybins = np.histogram2d(pos[:,j], pos[:,i], bins=bins, weights=weights)
+
+		# compute the overdensity if desired
+		if overdensity:
+			dens = dens / np.mean(dens) - 1.
+		else:
+			dens = np.log(dens) # get log of density
+
+		if plot:
+			plt.imshow(dens, origin='lower', extent=[xbins[0], xbins[-1], ybins[0], ybins[-1]])
+
+			if plot_name:
+				plt.savefig(plot_name)
+				plt.close()
+			else:
+				plt.show()
+
+		return dens, xbins, ybins
+
+	def density_profile(self, rmin:float=0., rmax:float=150., nbins:int=100, plot:bool=True, plotName:bool|str=False) -> tuple[np.ndarray, np.ndarray]:
+		'''density_profile computes the density profile of a halo
+		Note: snpshot must be centered (with e.g. snap.apply_center()) first! 
+
+		Parameters
+		----------
+		rmin : float, optional
+			min. radius, by default 0.
+		rmax : float, optional
+			max. radius, by default 150.
+		nbins : int, optional
+			number of radial bins, by default 100
+		plot : bool, optional
+			creates a plot of the density profile, by default True
+		plotName : bool | str, optional
+			if not False, saves the plot under this file name, by default False
+		Returns
+		-------
+		np.ndarray :
+			Radial points / bin centers
+		np.ndarray :
+			value of the density profile at the bin centers
+		'''
+
+		self.load_particle_data(['Coordinates', 'Masses'])
+		pos = self.data_fields['Coordinates']
+		m = self.data_fields['Masses']
+
+		bins = np.linspace(rmin, rmax, nbins+1)
+
+		r = np.sqrt(np.sum(pos**2), axis=1)
+
+		shell_volume = 4./3. * np.pi * (bins[1:]**3 - bins[:-1]**3)
+
+		hist, edges = np.histogram(r, bins=bins, weights=m)
+		rho = hist/shell_volume
+
+		bin_centers = (bins[1:] - bins[:-1])/2.
+
+		if plot:
+			plt.plot(bin_centers, rho)
+			plt.ylabel('$\\rho(r)$ $[M_{\\odot}/kpc^{3}]$')
+			plt.xlabel('r [kpc]')
+
+			if plotName:
+				plt.savefig(plotName)
+				plt.close()
+			else:
+				plt.show()
+
+		return bin_centers, rho
+
+
+
+
+
+
+		
+		
+

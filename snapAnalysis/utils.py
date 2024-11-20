@@ -72,4 +72,4 @@ def get_vslice_indices(pos:np.ndarray, slice:float, axis:int) -> np.ndarray:
 		array of indices to pos that specify which particles are in the slice
 	'''
 
-	return np.argwhere((pos[:,axis] <= (slice/2.)) & (pos[:,axis] >= (slice/2.))).flatten()
+	return np.argwhere((np.abs(pos[:,axis]) <= (slice/2.)))[0]

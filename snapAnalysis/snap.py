@@ -1,4 +1,4 @@
-# Contains the main snap class of snapAnalysis, which stores snapshots in a flexible format. 
+# Contains the main snaphot class of snapAnalysis, which stores snapshots in a flexible format. 
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -9,7 +9,7 @@ from astropy import constants as const
 from snapAnalysis import utils
 import warnings
 
-class snap:
+class snapshot:
 	''' The main class of snapAnalysis, which reads and stores a single particle type from a single gagdet/arepo format hdf5 snapshot. 
 	Methods provide common analysis routines such as computing density fields, centering, rotations, etc.
 	'''
@@ -161,6 +161,10 @@ class snap:
 		
 		if self.data_fields[field] == None:
 			return False
+		
+		if self.data_fields[field].shape[0] < self.N:
+			raise RuntimeError("Cannot read new fields after a subset of particles has been selected!")
+
 		return True
 
 	def arrange_fields(self, indices:np.ndarray) -> None:

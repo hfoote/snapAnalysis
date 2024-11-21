@@ -320,7 +320,7 @@ class snapshot:
 			assert self.check_if_field_read('Velocities'), "Particle velocities not loaded!"
 			self.data_fields['Velocities'] -= vel_center[None, :]
 
-	def find_position_center(self, vol_dec:float=3., delta:float=0.01, N_min:int=1000) -> np.ndarray:
+	def find_position_center(self, vol_dec:float=3., delta:float=0.01, N_min:int=1000, verbose:bool=False) -> np.ndarray:
 		'''find_position_center finds the center of mass of the snapshot via the shrinking-spheres method.
 
 		Parameters
@@ -331,6 +331,8 @@ class snapshot:
 			Tolerance, stop when change in COM is less than delta, by default 0.01
 		Nmin : int, optional
 			Minimum number of particles allowed within the sphere, by default 1000
+		verbose : bool, optional
+			Prints extra information, by default False
 
 		Returns
 		-------
@@ -350,6 +352,8 @@ class snapshot:
 		# shrink sphere
 		r_max = max(r_new)/vol_dec
 		change = 1000.0 # initialize change
+
+		i = 0
 
 		while (change > delta):
 			# all particles within the reduced radius, starting from original coordinates
@@ -375,6 +379,10 @@ class snapshot:
                                                   
 			com = com2
 			r_COM = r_COM2
+			i += 1
+
+		if verbose:
+			print(f"Found center in {i} iterations")
 
 		return com
 	

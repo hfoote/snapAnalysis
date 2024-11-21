@@ -47,7 +47,7 @@ def orbit_com(sim_dir:str, part_type:int, out_file:None|str=None, select_IDs:Non
 		if select_IDs:
 			s.select_particles(select_IDs)
 		
-		com_p = s.find_position_center(**com_kwargs)
+		com_p = s.find_position_center(verbose=verbose, **com_kwargs)
 		com_v = s.find_velocity_center(com_p, **vel_kwargs)
 
 		orbit[i] = s.time.value, *tuple(com_p.value), *tuple(com_v.value)

@@ -28,6 +28,7 @@ class snapshot:
 		self.filename = filename
 		self.ptype = ptype
 		self.fdm = False
+		self.subset = False 
 
 		# keep data fields empty until populated later
 		self.data_fields = {'Coordinates':None, 
@@ -125,6 +126,9 @@ class snapshot:
 			data field
 		'''
 
+		if self.subset:
+			raise RuntimeError("Cannot read new fields after a subset of particles has been selected!")
+		
 		with h5py.File(self.filename, 'r') as f:
 			data = np.array(f[f'PartType{self.ptype}/{field}'])
 
@@ -161,9 +165,6 @@ class snapshot:
 		
 		if self.data_fields[field] == None:
 			return False
-		
-		if self.data_fields[field].shape[0] < self.N:
-			raise RuntimeError("Cannot read new fields after a subset of particles has been selected!")
 
 		return True
 
@@ -198,6 +199,8 @@ class snapshot:
 			if not self.check_if_field_read(field):
 				continue
 			self.data_fields[field] = self.data_fields[field][np.where((IDs >= ID_range[0]) & (IDs <= ID_range[1]))]
+
+		self.subset = True
 
 	def load_particle_data(self, fields:list) -> None:
 		'''load_particle_data reads particle data for a field if it doesn't already exist

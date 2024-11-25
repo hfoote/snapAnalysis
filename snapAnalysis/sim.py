@@ -3,6 +3,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from snapAnalysis.snap import snapshot
+from snapAnalysis.utils import get_snaps
 from glob import glob
 
 def orbit_com(sim_dir:str, part_type:int, out_file:None|str=None, select_IDs:None|tuple=None, com_kwargs:dict={}, vel_kwargs:dict={}, verbose:bool=False) -> np.ndarray:
@@ -32,7 +33,7 @@ def orbit_com(sim_dir:str, part_type:int, out_file:None|str=None, select_IDs:Non
 		Nx7 array with [t,x,y,z,vx,vy,vz] at each timestep
 	'''
 
-	snap_names = np.sort(glob(sim_dir+'/snap_*.hdf5'))
+	snap_names = get_snaps(sim_dir)
 
 	N_snaps = len(snap_names)
 	orbit = np.zeros([N_snaps, 7])
@@ -54,8 +55,8 @@ def orbit_com(sim_dir:str, part_type:int, out_file:None|str=None, select_IDs:Non
 
 	if out_file:
 		np.savetxt(out_file, orbit, fmt = "%11.6f"*7, comments='#',
-            	   header="{:>10s}{:>11s}{:>11s}{:>11s}{:>11s}{:>11s}{:>11s}"\
-					.format(f't [{s.time.unit}]', f'x [{com_p.unit}]', f'y [{com_p.unit}]', f' [{com_p.unit}]z', 
+            	   header="{:>10s}{:>13s}{:>13s}{:>13s}{:>13s}{:>13s}{:>13s}"\
+					.format(f't [{s.time.unit}]', f'x [{com_p.unit}]', f'y [{com_p.unit}]', f'z [{com_p.unit}]', 
 			 				f'vx [{com_v.unit}]', f'vy [{com_v.unit}]', f'vz [{com_v.unit}]'))
 		
 	return np.round(orbit, 6)

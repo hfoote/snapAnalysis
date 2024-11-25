@@ -36,4 +36,12 @@ def test_get_vslice_indices() -> None:
 
 	return None
 	
+def test_get_snaps() -> None:
+	import numpy as np
+	from snapAnalysis.utils import get_snaps
 
+	expected = np.array(['tests/example_snaps/snap_000.hdf5', 'tests/example_snaps/snap_001.hdf5'])
+
+	assert(np.array_equal(get_snaps('tests/example_snaps/'), expected)), "Snapshot collection failed!"
+
+	return None

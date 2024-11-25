@@ -320,11 +320,13 @@ class snapshot:
 			assert self.check_if_field_read('Velocities'), "Particle velocities not loaded!"
 			self.data_fields['Velocities'] -= vel_center[None, :]
 
-	def find_position_center(self, vol_dec:float=3., delta:float=0.01, N_min:int=1000, verbose:bool=False) -> np.ndarray:
+	def find_position_center(self, r_start:None|float=None, vol_dec:float=3., delta:float=0.01, N_min:int=1000, verbose:bool=False) -> np.ndarray:
 		'''find_position_center finds the center of mass of the snapshot via the shrinking-spheres method.
 
 		Parameters
 		----------
+		r_start : None or float, optional
+			Initial sphere radius, default (none) uses furthest particle from box origin
 		vol_dec : float, optional
 			Factor by which the sphere radius is reduced during an iteration, by default 3.
 		delta : float, optional
@@ -350,7 +352,11 @@ class snapshot:
 		r_new = np.sqrt(np.sum(pos_new**2, axis=1))
 
 		# shrink sphere
-		r_max = max(r_new)/vol_dec
+		if r_start:
+			r_max = r_start
+		else:
+			r_max = np.max(r_new)
+		r_max /= vol_dec
 		change = 1000.0 # initialize change
 
 		i = 0
@@ -451,7 +457,7 @@ class snapshot:
 			Leave as 0 to use the whole box. Otherwise, provide a distance in the length units of the snapshot 
 	        from the midplane along the specified axis to include., by default 0
 		overdensity : bool, optional
-			Return density array as the "overdensity," otherwise return the log of the actual density, by default False
+			Return density array as the "overdensity," otherwise return the actual density, by default False
 
 		Returns
 		-------
@@ -484,8 +490,6 @@ class snapshot:
 		# compute the overdensity if desired
 		if overdensity:
 			dens = dens / np.mean(dens) - 1.
-		else:
-			dens = np.log(dens) # get log of density
 
 		if plot:
 			plt.imshow(dens, origin='lower', extent=[xbins[0], xbins[-1], ybins[0], ybins[-1]])

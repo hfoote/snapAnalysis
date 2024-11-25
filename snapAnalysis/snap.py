@@ -352,7 +352,7 @@ class snapshot:
 		r_new = np.sqrt(np.sum(pos_new**2, axis=1))
 
 		# shrink sphere
-		if r_start:
+		if r_start != None:
 			r_max = r_start
 		else:
 			r_max = np.max(r_new)

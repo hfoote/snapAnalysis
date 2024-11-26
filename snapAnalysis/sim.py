@@ -33,7 +33,7 @@ def orbit_com(sim_dir:str, part_type:int, out_file:None|str=None, select_IDs:Non
 		Nx7 array with [t,x,y,z,vx,vy,vz] at each timestep
 	'''
 
-	snap_names = get_snaps(sim_dir)[:10]
+	snap_names = get_snaps(sim_dir)
 
 	N_snaps = len(snap_names)
 	orbit = np.zeros([N_snaps, 7])

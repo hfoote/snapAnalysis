@@ -8,6 +8,7 @@ from astropy import units as u
 from astropy import constants as const
 from snapAnalysis import utils
 import warnings
+from copy import deepcopy
 
 class snapshot:
 	''' The main class of snapAnalysis, which reads and stores a single particle type from a single gagdet/arepo format hdf5 snapshot. 
@@ -353,7 +354,7 @@ class snapshot:
 
 		# shrink sphere
 		if r_start != None:
-			r_max = r_start
+			r_max = deepcopy(r_start) # deepcopy so kwarg remains unchanged on successive calls
 		else:
 			r_max = np.max(r_new)
 		r_max /= vol_dec

@@ -33,28 +33,28 @@ def orbit_com(sim_dir:str, part_type:int, out_file:None|str=None, select_IDs:Non
 		Nx7 array with [t,x,y,z,vx,vy,vz] at each timestep
 	'''
 
-	snap_names = get_snaps(sim_dir)
+	snap_names = get_snaps(sim_dir)[:10]
 
 	N_snaps = len(snap_names)
 	orbit = np.zeros([N_snaps, 7])
 
 	for i, snap in enumerate(snap_names):
 		if verbose:
-			print(f'Finding center of snapshot {i} of {N_snaps}')
+			print(f'Finding center of snapshot {i} of {N_snaps-1}')
 			
 		s = snapshot(snap, part_type)
 		s.read_all()
-
+		
 		if select_IDs:
 			s.select_particles(select_IDs)
 		
 		com_p = s.find_position_center(verbose=verbose, **com_kwargs)
 		com_v = s.find_velocity_center(com_p, **vel_kwargs)
-
+		
 		orbit[i] = s.time.value, *tuple(com_p.value), *tuple(com_v.value)
 
 	if out_file:
-		np.savetxt(out_file, orbit, fmt = "%11.6f"*7, comments='#',
+		np.savetxt(out_file, orbit, fmt = "%13.6f"*7, comments='#',
             	   header="{:>10s}{:>13s}{:>13s}{:>13s}{:>13s}{:>13s}{:>13s}"\
 					.format(f't [{s.time.unit}]', f'x [{com_p.unit}]', f'y [{com_p.unit}]', f'z [{com_p.unit}]', 
 			 				f'vx [{com_v.unit}]', f'vy [{com_v.unit}]', f'vz [{com_v.unit}]'))

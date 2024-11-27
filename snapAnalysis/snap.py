@@ -218,8 +218,8 @@ class snapshot:
 				continue
 
 			# special cases for FDM
-			if ((field == 'PsiRe') or (field == 'PsiIm')):
-				assert (self.fdm and self.ptype == 1), "Non-FDM particle types do not contain wavefunction data!"
+			if ((field == 'PsiRe') or (field == 'PsiIm')) and not (self.fdm and self.ptype == 1):
+				raise RuntimeError("Non-FDM particle types do not contain wavefunction data!")
 			
 			if (field == 'Velocity') and (self.ptype == 1) and self.fdm:
 				self.data_fields[field] = self.get_FDM_velocities()
@@ -314,11 +314,16 @@ class snapshot:
 			[vx, vy, vz] Velocity center
 		'''
 
-		assert self.check_if_field_read('Coordinates'), "Particle positions not loaded!"
+		if not self.check_if_field_read('Coordinates'):
+			raise RuntimeError("Particle positions not loaded!")
+		
 		self.data_fields['Coordinates'] -= pos_center[None, :]
 
 		if vel_center != None:
-			assert self.check_if_field_read('Velocities'), "Particle velocities not loaded!"
+
+			if not self.check_if_field_read('Velocities'):
+				raise RuntimeError("Particle velocities not loaded!")
+			
 			self.data_fields['Velocities'] -= vel_center[None, :]
 
 	def find_position_center(self, r_start:None|float=None, vol_dec:float=3., delta:float=0.01, N_min:int=1000, verbose:bool=False) -> np.ndarray:
@@ -503,7 +508,7 @@ class snapshot:
 
 		return dens, xbins, ybins
 
-	def density_profile(self, rmin:float=0., rmax:float=150., nbins:int=100, plot:bool=True, plotName:bool|str=False) -> tuple[np.ndarray, np.ndarray]:
+	def density_profile(self, rmin:float=0., rmax:float=150., nbins:int=100, log_bins:bool=False, plot:bool=True, plotName:bool|str=False) -> tuple[np.ndarray, np.ndarray]:
 		'''density_profile computes the density profile of a halo
 		Note: snpshot must be centered (with e.g. snap.apply_center()) first! 
 
@@ -515,6 +520,8 @@ class snapshot:
 			max. radius, by default 150.
 		nbins : int, optional
 			number of radial bins, by default 100
+		log_bins : bool, optional
+			use logarithmic bin spacing, by default False
 		plot : bool, optional
 			creates a plot of the density profile, by default True
 		plotName : bool | str, optional
@@ -531,7 +538,10 @@ class snapshot:
 		pos = self.data_fields['Coordinates']
 		m = self.data_fields['Masses']
 
-		bins = np.linspace(rmin, rmax, nbins+1)
+		if log_bins:
+			bins = np.logspace(np.log10(rmin), np.log10(rmax), nbins+1)
+		else:
+			bins = np.linspace(rmin, rmax, nbins+1)
 
 		r = np.sqrt(np.sum(pos**2, axis=1))
 

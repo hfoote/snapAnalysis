@@ -482,7 +482,7 @@ class snapshot:
 
 		i, j = utils.set_axes(axis)
 
-		if slice_width:
+		if slice_width != False:
 			slice = utils.get_vslice_indices(pos, slice_width, axis)
 			pos = pos[slice]
 			m = m[slice]
@@ -600,7 +600,7 @@ class snapshot:
 
 		i, j = utils.set_axes(axis)
 
-		if slice_width:
+		if slice_width != False:
 			slice = utils.get_vslice_indices(pos, slice_width, axis)
 			pos = pos[slice]
 			pot = pot[slice]

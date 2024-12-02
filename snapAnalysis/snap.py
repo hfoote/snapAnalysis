@@ -9,6 +9,7 @@ from astropy import constants as const
 from snapAnalysis import utils
 import warnings
 from copy import deepcopy
+from scipy.stats import binned_statistic_2d
 
 class snapshot:
 	''' The main class of snapAnalysis, which reads and stores a single particle type from a single gagdet/arepo format hdf5 snapshot. 
@@ -565,7 +566,48 @@ class snapshot:
 
 		return bin_centers, rho
 
+	def potential_projection(self, axis:int=2, bins:int|list=[200,200], plot:bool=True, plot_name:bool|str=False, 
+						  slice_width:bool|float=False) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+		'''potential_projection bins the particles in the specified plane and finds the mean value of the potential within each bin.
 
+		Parameters
+		----------
+		axis : int, optional
+			Axis to project along (x=0, y=1, z=2), by default 2
+		bins : int | list, optional
+			bin specification passed to scipy's binned_statistic_2d, by default [200,200]
+		plot : bool, optional
+			create a plot of the potential, by default True
+		plot_name : bool | str, optional
+			if not False, saves the plot under this file name, by default False
+		slice_width : bool | float, optional
+			Leave as 0 to use the whole box. Otherwise, provide a distance in the length units of the snapshot 
+	        from the midplane along the specified axis to include, by default False
+
+		Returns
+		-------
+		np.ndarray :
+			Binned potential field
+		np.ndarray :
+			x bin edges
+		np.ndarray : 
+			y bin edges
+		'''
+
+		self.load_particle_data(['Coordinates', 'Potential'])
+		pos = self.data_fields['Coordinates']
+		pot = self.data_fields['Potential']
+
+		i, j = utils.set_axes(axis)
+
+		if slice_width:
+			slice = utils.get_vslice_indices(pos, slice_width, axis)
+			pos = pos[slice]
+			pot = pot[slice]
+
+		phi, xbins, ybins, _ = binned_statistic_2d(pos[:,i], pos[:,j], pot, bins=bins, statistic='mean')
+
+		return phi, xbins, ybins
 
 
 

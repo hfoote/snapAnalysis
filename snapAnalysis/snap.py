@@ -327,11 +327,13 @@ class snapshot:
 			
 			self.data_fields['Velocities'] -= vel_center[None, :]
 
-	def find_position_center(self, r_start:None|float=None, vol_dec:float=3., delta:float=0.01, N_min:int=1000, verbose:bool=False) -> np.ndarray:
+	def find_position_center(self, guess:None|np.ndarray=None, r_start:None|float=None, vol_dec:float=3., delta:float=0.01, N_min:int=1000, verbose:bool=False) -> np.ndarray:
 		'''find_position_center finds the center of mass of the snapshot via the shrinking-spheres method.
 
 		Parameters
 		----------
+		guess : None or np.ndarray, optional
+			Initial [x,y,z] guess for COM position. If None, uses the com of every active particle in the box.
 		r_start : None or float, optional
 			Initial sphere radius, default (none) uses furthest particle from box origin
 		vol_dec : float, optional
@@ -351,7 +353,10 @@ class snapshot:
 		self.load_particle_data(['Masses', 'Coordinates'])
 
 		# initial guess using every particle
-		com = utils.com_define(self.data_fields['Masses'], self.data_fields['Coordinates'])
+		if guess == None:
+			com = utils.com_define(self.data_fields['Masses'], self.data_fields['Coordinates'])
+		else: # or from the user
+			com = deepcopy(guess) # deepcopy so kwarg remains unchanged on successive calls
 		r_COM = np.sqrt(np.sum(com**2))
 
 		# make temp coordinates with respect to COM
@@ -605,7 +610,7 @@ class snapshot:
 			pos = pos[slice]
 			pot = pot[slice]
 
-		phi, xbins, ybins, _ = binned_statistic_2d(pos[:,i], pos[:,j], pot, bins=bins, statistic='mean')
+		phi, xbins, ybins, _ = binned_statistic_2d(pos[:,j], pos[:,i], pot, bins=bins, statistic='mean')
 
 		return phi, xbins, ybins
 

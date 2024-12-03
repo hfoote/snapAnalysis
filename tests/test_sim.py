@@ -18,5 +18,5 @@ def test_orbit_com() -> None:
 	assert np.allclose(orbit_from_file, test_arr), "Orbit file failed!"
 
 	os.remove('tests/test_centers.txt')
-	
+
 	return None

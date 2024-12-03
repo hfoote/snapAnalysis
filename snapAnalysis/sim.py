@@ -6,7 +6,7 @@ from snapAnalysis.snap import snapshot
 from snapAnalysis.utils import get_snaps
 from glob import glob
 
-def orbit_com(sim_dir:str, part_type:int, out_file:None|str=None, select_IDs:None|tuple=None, com_kwargs:dict={}, vel_kwargs:dict={}, verbose:bool=False) -> np.ndarray:
+def orbit_com(sim_dir:str, part_type:int, out_file:None|str=None, select_IDs:None|tuple=None, use_guess:None|str=None, com_kwargs:dict={}, vel_kwargs:dict={}, verbose:bool=False) -> np.ndarray:
 	'''orbit_com stores the center-of-mass position and velocity of the specified 
 
 	Parameters
@@ -20,6 +20,9 @@ def orbit_com(sim_dir:str, part_type:int, out_file:None|str=None, select_IDs:Non
 	select_IDs : None or tuple, optional
 		min. and max. particle IDs for selection if desired, otherwise uses all particles 
 		of the specified type. 
+	use_guess : None or str ('previous')
+		specifies where the intial sphere is centered. None uses the com of every particle, 
+		'previous' uses the previous snapshot's com. 
 	com_kwargs : dict, optional
 		kwargs for snap.find_position_center, by default {}
 	vel_kwargs : dict, optional
@@ -47,8 +50,16 @@ def orbit_com(sim_dir:str, part_type:int, out_file:None|str=None, select_IDs:Non
 		
 		if select_IDs:
 			s.select_particles(select_IDs)
-		
-		com_p = s.find_position_center(verbose=verbose, **com_kwargs)
+
+		if use_guess == 'previous':
+			if i == 0:
+				# first snapshot uses no guess
+				com_p = s.find_position_center(verbose=verbose, **com_kwargs) 
+			else:
+				# use the com from the previous iteration
+				com_p = s.find_position_center(guess=com_p, verbose=verbose, **com_kwargs) 
+		else: # calculate without initial guess
+			com_p = s.find_position_center(verbose=verbose, **com_kwargs)
 		com_v = s.find_velocity_center(com_p, **vel_kwargs)
 		
 		orbit[i] = s.time.value, *tuple(com_p.value), *tuple(com_v.value)

@@ -32,7 +32,7 @@ def test_get_vslice_indices() -> None:
 					[-1., -1., -1.], 
 					[0., 0., 0.]])
 	
-	assert np.array_equal(get_vslice_indices(pos, slice=0.5, axis=2), np.array([8])), "Vertical slicing incorrect!"
+	assert np.array_equal(get_vslice_indices(pos, slice=0.5, axis=2), (np.array([8]),)), "Vertical slicing incorrect!"
 
 	return None
 	

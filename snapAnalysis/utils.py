@@ -74,7 +74,7 @@ def get_vslice_indices(pos:np.ndarray, slice:float, axis:int) -> np.ndarray:
 		array of indices to pos that specify which particles are in the slice
 	'''
 
-	return np.argwhere((np.abs(pos[:,axis]) <= (slice/2.)))[0]
+	return np.where((np.abs(pos[:,axis]) <= (slice/2.)))
 
 def get_snaps(dir:str, ext:str='.hdf5', prefix:str='snap_') -> np.ndarray:
 	'''get_snaps returns an ordered list of all snapshots in a directory. 

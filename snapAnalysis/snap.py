@@ -448,6 +448,25 @@ class snapshot:
 
 		self.apply_center(com_pos, com_vel)
 
+	def apply_rotation(self, rot_mat:np.ndarray) -> None:
+		'''apply_rotation applies a rotation matrix to particle positions and velocities
+
+		Parameters
+		----------
+		rot_mat : np.ndarray
+			rotation matrix
+		'''
+
+		if not self.check_if_field_read('Coordinates'):
+			raise RuntimeError("Particle positions not loaded!")
+		
+		self.data_fields['Coordinates'] = (np.matmul(rot_mat, self.data_fields['Coordinates'].T)).T
+
+		if not self.check_if_field_read('Velocities'):
+			warnings.warn("Velocities not loaded, rotation applied to positions only!")
+			
+		self.data_fields['Velocities'] = (np.matmul(rot_mat, self.data_fields['Velocities'].T)).T
+
 	def density_projection(self, axis:int=2, bins:int|list=[200,200], mass_weight:bool=False, plot:bool=True, 
 						   plot_name:bool|str=False, slice_width:bool|float=False, overdensity:bool=False) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
 		'''density_projection generates a density histogram projected along the specified

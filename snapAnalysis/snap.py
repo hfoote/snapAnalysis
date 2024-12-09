@@ -499,7 +499,7 @@ class snapshot:
 			pos = pos[idx]
 			vel = vel[idx]
 
-		J = np.mean(np.cross(pos, vel), axis = 1)
+		J = np.mean(np.cross(pos, vel), axis=0)
 		return J / np.sqrt(np.sum(J**2))
 
 	def density_projection(self, axis:int=2, bins:int|list=[200,200], mass_weight:bool=False, plot:bool=True, 

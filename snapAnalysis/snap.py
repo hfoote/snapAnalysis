@@ -31,6 +31,9 @@ class snapshot:
 		self.ptype = ptype
 		self.fdm = False
 		self.subset = False 
+		self.pos_centered = False
+		self.vel_centered = False
+		self.aligned = False
 
 		# keep data fields empty until populated later
 		self.data_fields = {'Coordinates':None, 
@@ -319,6 +322,7 @@ class snapshot:
 			raise RuntimeError("Particle positions not loaded!")
 		
 		self.data_fields['Coordinates'] -= pos_center[None, :]
+		self.pos_centered = True
 
 		if vel_center != None:
 
@@ -326,6 +330,8 @@ class snapshot:
 				raise RuntimeError("Particle velocities not loaded!")
 			
 			self.data_fields['Velocities'] -= vel_center[None, :]
+			self.vel_centered = True
+		
 
 	def find_position_center(self, guess:None|np.ndarray=None, r_start:None|float=None, vol_dec:float=3., delta:float=0.01, N_min:int=1000, verbose:bool=False) -> np.ndarray:
 		'''find_position_center finds the center of mass of the snapshot via the shrinking-spheres method.
@@ -466,6 +472,35 @@ class snapshot:
 			warnings.warn("Velocities not loaded, rotation applied to positions only!")
 			
 		self.data_fields['Velocities'] = (np.matmul(rot_mat, self.data_fields['Velocities'].T)).T
+
+	def find_angular_momentum_direction(self, r_max:u.Quantity|None=None) -> np.ndarray:
+		'''find_angular_momentum_direction Returns the normalized average specific angular momentum vector of 
+		the loaded particles. 
+
+		Parameters
+		----------
+		r_max : u.Quantity | None, optional
+			max. radius within which to consider particles. None uses entire box. By default None
+
+		Returns
+		-------
+		np.ndarray
+			[x,y,z] components of the average angular momentum unit vector
+		'''
+
+		self.load_particle_data(['Coordinates', 'Velocities'])
+
+		pos = self.data_fields['Coordinates']
+		vel = self.data_fields['Velocities']
+
+		if r_max != None:
+			r = np.sqrt(np.sum(pos**2), axis=1)
+			idx = np.where(r <= r_max)
+			pos = pos[idx]
+			vel = vel[idx]
+
+		J = np.mean(np.cross(pos, vel), axis = 1)
+		return J / np.sqrt(np.sum(J**2))
 
 	def density_projection(self, axis:int=2, bins:int|list=[200,200], mass_weight:bool=False, plot:bool=True, 
 						   plot_name:bool|str=False, slice_width:bool|float=False, overdensity:bool=False) -> tuple[np.ndarray, np.ndarray, np.ndarray]:

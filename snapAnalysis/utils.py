@@ -135,7 +135,7 @@ def cartesian_to_spherical(coords:np.ndarray) -> np.ndarray:
 		remove_axis = False
 
 	r = np.sqrt(np.sum(coords.value**2, axis=1))
-	theta = np.arccos(coords[:,2].value/r.value)
+	theta = np.arccos(coords[:,2].value/r)
 	phi = np.arctan2(coords[:,1].value, coords[:,0].value)
 
 	if remove_axis:

@@ -111,3 +111,117 @@ def get_snaps(dir:str, ext:str='.hdf5', prefix:str='snap_') -> np.ndarray:
 	snap_list_ordered = snap_list[np.argsort(current_order)]
 	
 	return snap_list_ordered    
+
+def cartesian_to_spherical(coords:np.ndarray) -> np.ndarray:
+	'''cartesian_to_spherical transforms a set of Cartesian coordinates
+	to spherical coordinates. 
+
+	Parameters
+	----------
+	coords : np.array
+		Nx3 array of x,y,z coordinates
+
+	Returns
+	-------
+	np.array
+		(r, theta (polar), phi (azimuth)) coordinates
+	'''
+
+	# make input 2D if required
+	if coords.ndim == 1:
+		coords = coords[np.newaxis, :]
+		remove_axis = True
+	else:
+		remove_axis = False
+
+	r = np.sqrt(np.sum(coords**2, axis=1))
+	theta = np.arccos(coords[:,2]/r)
+	phi = np.arctan2(coords[:,1], coords[:,0])
+
+	if remove_axis:
+		return np.hstack([r, theta, phi])
+	
+	return np.array([r, theta, phi]).T
+
+def cartesian_to_cylindrical(coords:np.ndarray) -> np.ndarray:
+	'''cartesian_to_cylindrical transforms a set of Cartesian coordinates
+	to cylindrical coordinates. 
+
+	Parameters
+	----------
+	coords : np.array
+		Nx3 array of x,y,z coordinates
+
+	Returns
+	-------
+	np.array
+		(rho, phi (azimuth), z) coordinates
+	'''
+	
+	# make input 2D if required
+	if coords.ndim == 1:
+		coords = coords[np.newaxis, :]
+		remove_axis = True
+	else:
+		remove_axis = False
+
+	rho = np.sqrt(np.sum(coords[:,:2]**2, axis=1))
+	phi = np.arctan2(coords[:,1], coords[:,0])
+
+	if remove_axis:
+		return np.hstack([rho, phi, coords[:,2]])[0]
+	
+	return np.array([rho, phi, coords[:,2]]).T
+
+def rotation_matrix(alpha:float, beta:float, gamma:float) -> np.ndarray:
+	'''rotation_matrix returns the rotation matrix for a general intrinsic rotation
+	of yaw, pitch, roll (Tait-Bryan angles about z,y,x) alpha, beta, gamma, respectively. 
+
+	Parameters
+	----------
+	alpha : float
+		yaw angle (about z axis)
+	beta : float
+		pitch angle (about y axis)
+	gamma : float
+		roll angle (about x axis)
+
+	Returns
+	-------
+	np.ndarray
+		rotation matrix
+	'''
+
+	Rz = np.array([[np.cos(alpha), -np.sin(alpha), 0], 
+				   [np.sin(alpha), np.cos(alpha), 0],
+				   [0, 0, 1]])
+	
+	Ry = np.array([[np.cos(beta), 0, np.sin(beta)], 
+				   [0, 1, 0],
+				   [-np.sin(beta), 0, np.cos(beta)]])
+	
+	Rx = np.array([[1, 0, 0], 
+				   [0, np.cos(gamma), -np.sin(gamma)],
+				   [0, np.sin(gamma), np.cos(gamma)]])
+	
+	return np.matmul(Rz, np.matmul(Ry, Rx))
+
+def find_alignment_rotation(vec:np.ndarray) -> np.ndarray:
+	'''find_alignment_rotation returns the rotation matrix needed to 
+	align the input vector with the positive z-axis
+
+	Parameters
+	----------
+	vec : np.ndarray
+		[x,y,z] vector
+
+	Returns
+	-------
+	np.ndarray
+		rotation matrix
+	'''
+
+	# get rotation angles first
+	_, theta, phi = cartesian_to_spherical(vec)
+
+	return rotation_matrix(-phi, -theta, 0.)

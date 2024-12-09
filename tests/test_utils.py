@@ -45,3 +45,16 @@ def test_get_snaps() -> None:
 	assert(np.array_equal(get_snaps('tests/example_snaps/'), expected)), "Snapshot collection failed!"
 
 	return None
+
+def test_coordinates() -> None:
+	import numpy as np
+	from snapAnalysis.utils import cartesian_to_spherical, cartesian_to_cylindrical
+	test_vec_1d = np.ones(3)
+	test_vec_2d = np.ones([2,3])
+
+	spherical_expected = np.array([np.sqrt(3), np.arccos(1./np.sqrt(3)), np.pi/4.])
+	cylindrical_expected = np.array([np.sqrt(2), np.pi/4., 1.])
+
+	assert(np.allclose(cartesian_to_spherical(test_vec_1d), spherical_expected)), "Spherical coordinate conversion failed!"
+	assert(np.allclose(cartesian_to_cylindrical(test_vec_2d), np.vstack([cylindrical_expected, cylindrical_expected]))), "Cylindrical coordinate conversion failed!"
+

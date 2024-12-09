@@ -501,6 +501,19 @@ class snapshot:
 
 		J = np.mean(np.cross(pos, vel), axis=0)
 		return J / np.sqrt(np.sum(J**2))
+	
+	def align_angular_momentum(self, **kwargs) -> None:
+		'''align_angular_momentum rotates the particle data such that the 
+		average angular momentum vector is aligned with the z-axis.
+
+		Parameters
+		----------
+		**kwargs are passed to snapshot.find_angular_momentum_directon()
+		'''
+
+		J = self.find_angular_momentum_direction(**kwargs)
+		mat = utils.find_alignment_rotation(J)
+		self.apply_rotation(mat)
 
 	def density_projection(self, axis:int=2, bins:int|list=[200,200], mass_weight:bool=False, plot:bool=True, 
 						   plot_name:bool|str=False, slice_width:bool|float=False, overdensity:bool=False) -> tuple[np.ndarray, np.ndarray, np.ndarray]:

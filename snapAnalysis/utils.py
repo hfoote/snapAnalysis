@@ -134,9 +134,9 @@ def cartesian_to_spherical(coords:np.ndarray) -> np.ndarray:
 	else:
 		remove_axis = False
 
-	r = np.sqrt(np.sum(coords**2, axis=1))
-	theta = np.arccos(coords[:,2]/r)
-	phi = np.arctan2(coords[:,1], coords[:,0])
+	r = np.sqrt(np.sum(coords.value**2, axis=1))
+	theta = np.arccos(coords[:,2].value/r.value)
+	phi = np.arctan2(coords[:,1].value, coords[:,0].value)
 
 	if remove_axis:
 		return np.hstack([r, theta, phi])
@@ -165,8 +165,8 @@ def cartesian_to_cylindrical(coords:np.ndarray) -> np.ndarray:
 	else:
 		remove_axis = False
 
-	rho = np.sqrt(np.sum(coords[:,:2]**2, axis=1))
-	phi = np.arctan2(coords[:,1], coords[:,0])
+	rho = np.sqrt(np.sum(coords.value[:,:2]**2, axis=1))
+	phi = np.arctan2(coords[:,1].value, coords[:,0].value)
 
 	if remove_axis:
 		return np.hstack([rho, phi, coords[:,2]])[0]

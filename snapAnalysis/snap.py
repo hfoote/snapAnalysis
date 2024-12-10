@@ -575,7 +575,7 @@ class snapshot:
 			bin_volume = (xbins[1] - xbins[0])*(ybins[1] - ybins[0])
 			dens /= bin_volume
 		elif (normalization == 'volume') and (slice_width != 0):
-			bin_volume = (xbins[1] - xbins[0])*(ybins[1] - ybins[0])*2.*slice_width
+			bin_volume = (xbins[1] - xbins[0])*(ybins[1] - ybins[0])*2.*slice_width.value
 			dens /= bin_volume
 		else:
 			raise ValueError("Invalid normalization!")

@@ -515,8 +515,8 @@ class snapshot:
 		mat = utils.find_alignment_rotation(J)
 		self.apply_rotation(mat)
 
-	def density_projection(self, axis:int=2, bins:int|list=[200,200], mass_weight:bool=False, plot:bool=True, 
-						   plot_name:bool|str=False, slice_width:bool|float=False, overdensity:bool=False) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+	def density_projection(self, axis:int=2, bins:int|list=[200,200], mass_weight:bool=True, plot:bool=True, 
+						   plot_name:bool|str=False, slice_width:bool|float=False, normalization:bool='surface') -> tuple[np.ndarray, np.ndarray, np.ndarray]:
 		'''density_projection generates a density histogram projected along the specified
 		axis. 
 
@@ -527,7 +527,7 @@ class snapshot:
 		bins : int or list, optional
 			bin specification passed to np.histogram, by default [200,200]
 		mass_weight : bool, optional
-			weight particles by their mass, by default False
+			weight particles by their mass, by default True
 		plot : bool, optional
 			create a plot of the density histogram, by default True
 		plot_name : bool or str, optional
@@ -535,8 +535,10 @@ class snapshot:
 		slice_width : int, optional
 			Leave as 0 to use the whole box. Otherwise, provide a distance in the length units of the snapshot 
 	        from the midplane along the specified axis to include., by default 0
-		overdensity : bool, optional
-			Return density array as the "overdensity," otherwise return the actual density, by default False
+		normalization : str, optional
+			"surface" (default) returns surface density, 
+			"overdensity" returns the density contrast,
+			"volume" returns volume density, requires slice_width to be nonzero. 
 
 		Returns
 		-------
@@ -566,9 +568,17 @@ class snapshot:
 
 		dens, xbins, ybins = np.histogram2d(pos[:,j].value, pos[:,i].value, bins=bins, weights=weights)
 
-		# compute the overdensity if desired
-		if overdensity:
+		# normalization
+		if normalization == 'overdensity':
 			dens = dens / np.mean(dens) - 1.
+		elif normalization == 'surface':
+			bin_volume = (xbins[1] - xbins[0])*(ybins[1] - ybins[0])
+			dens /= bin_volume
+		elif (normalization == 'volume') and (slice_width != 0):
+			bin_volume = (xbins[1] - xbins[0])*(ybins[1] - ybins[0])*2.*slice_width
+			dens /= bin_volume
+		else:
+			raise ValueError("Invalid normalization!")
 
 		if plot:
 			plt.imshow(dens, origin='lower', extent=[xbins[0], xbins[-1], ybins[0], ybins[-1]])

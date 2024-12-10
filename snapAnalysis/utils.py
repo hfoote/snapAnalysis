@@ -114,7 +114,7 @@ def get_snaps(dir:str, ext:str='.hdf5', prefix:str='snap_') -> np.ndarray:
 
 def cartesian_to_spherical(coords:np.ndarray) -> np.ndarray:
 	'''cartesian_to_spherical transforms a set of Cartesian coordinates
-	to spherical coordinates. 
+	to spherical coordinates, while preserving the shape of the input. 
 
 	Parameters
 	----------
@@ -145,7 +145,7 @@ def cartesian_to_spherical(coords:np.ndarray) -> np.ndarray:
 
 def cartesian_to_cylindrical(coords:np.ndarray) -> np.ndarray:
 	'''cartesian_to_cylindrical transforms a set of Cartesian coordinates
-	to cylindrical coordinates. 
+	to cylindrical coordinates, while preserving the input shape.
 
 	Parameters
 	----------
@@ -204,7 +204,7 @@ def rotation_matrix(alpha:float, beta:float, gamma:float) -> np.ndarray:
 				   [0, np.cos(gamma), -np.sin(gamma)],
 				   [0, np.sin(gamma), np.cos(gamma)]])
 	
-	return np.matmul(Rz, np.matmul(Ry, Rx))
+	return np.matmul(Rx, np.matmul(Ry, Rz))
 
 def find_alignment_rotation(vec:np.ndarray) -> np.ndarray:
 	'''find_alignment_rotation returns the rotation matrix needed to 

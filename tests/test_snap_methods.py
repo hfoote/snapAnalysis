@@ -4,6 +4,7 @@
 from snapAnalysis.snap import snapshot
 import astropy.units as u
 import numpy as np
+
 snap_obj = snapshot('tests/example_snaps/snap_000.hdf5', 1)
 
 def test_snap_creation() -> None:

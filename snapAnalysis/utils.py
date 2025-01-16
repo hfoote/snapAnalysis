@@ -169,7 +169,7 @@ def cartesian_to_cylindrical(coords:np.ndarray) -> np.ndarray:
 	phi = np.arctan2(coords[:,1], coords[:,0])
 
 	if remove_axis:
-		return np.hstack([rho, phi, coords[:,2]])[0]
+		return np.hstack([rho, phi, coords[:,2]])
 	
 	return np.array([rho, phi, coords[:,2]]).T
 

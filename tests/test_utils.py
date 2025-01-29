@@ -1,7 +1,7 @@
-# tests for the utility functions of snapAnalysis
+# unit tests for the utility functions of snapAnalysis
+import numpy as np
 
 def test_com_define() -> None:
-	import numpy as np
 	from snapAnalysis.utils import com_define
 
 	pos = np.array([[1., 1., 1.],
@@ -19,7 +19,6 @@ def test_com_define() -> None:
 	return None
 
 def test_get_vslice_indices() -> None:
-	import numpy as np
 	from snapAnalysis.utils import get_vslice_indices
 
 	pos = np.array([[1., 1., 1.],
@@ -37,24 +36,44 @@ def test_get_vslice_indices() -> None:
 	return None
 	
 def test_get_snaps() -> None:
-	import numpy as np
 	from snapAnalysis.utils import get_snaps
 
 	expected = np.array(['tests/example_snaps/snap_000.hdf5', 'tests/example_snaps/snap_001.hdf5'])
 
-	assert(np.array_equal(get_snaps('tests/example_snaps/'), expected)), "Snapshot collection failed!"
+	assert np.array_equal(get_snaps('tests/example_snaps/'), expected), "Snapshot collection failed!"
 
 	return None
 
-def test_coordinates() -> None:
-	import numpy as np
-	from snapAnalysis.utils import cartesian_to_spherical, cartesian_to_cylindrical
+def test_cartesian_to_spherical() -> None:
+	from snapAnalysis.utils import cartesian_to_spherical
 	test_vec_1d = np.ones(3)
 	test_vec_2d = np.ones([2,3])
 
-	spherical_expected = np.array([np.sqrt(3), np.arccos(1./np.sqrt(3)), np.pi/4.])
-	cylindrical_expected = np.array([np.sqrt(2), np.pi/4., 1.])
+	expected = np.array([np.sqrt(3), np.arccos(1./np.sqrt(3)), np.pi/4.])
 
-	assert(np.allclose(cartesian_to_spherical(test_vec_1d), spherical_expected)), "Spherical coordinate conversion failed!"
-	assert(np.allclose(cartesian_to_cylindrical(test_vec_2d), np.vstack([cylindrical_expected, cylindrical_expected]))), "Cylindrical coordinate conversion failed!"
+	assert np.allclose(cartesian_to_spherical(test_vec_1d), expected), "Spherical coordinate conversion failed!"
+	assert np.allclose(cartesian_to_spherical(test_vec_2d), np.vstack([expected, expected])), "Spherical coordinate conversion failed!"
 
+def test_cartesian_to_cylindrical() -> None:
+	from snapAnalysis.utils import cartesian_to_cylindrical
+	test_vec_1d = np.ones(3)
+	test_vec_2d = np.ones([2,3])
+
+	expected = np.array([np.sqrt(2), np.pi/4., 1.])
+
+	assert np.allclose(cartesian_to_cylindrical(test_vec_1d), expected), "Cylindrical coordinate conversion failed!"
+	assert np.allclose(cartesian_to_cylindrical(test_vec_2d), np.vstack([expected, expected])), "Cylindrical coordinate conversion failed!"
+
+	return None
+
+def test_find_alignment_rotation() -> None:
+	from snapAnalysis.utils import find_alignment_rotation
+
+	input = np.array([[23., 5., -64.]])
+	expected = np.array([[0., 0., 1.]])*np.linalg.norm(input[0])
+	
+	rotation = np.matmul(find_alignment_rotation(input[0]), input.T).T
+
+	assert np.allclose(rotation, expected), "Rotations failed!"
+
+	return None

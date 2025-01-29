@@ -359,7 +359,7 @@ class snapshot:
 		self.load_particle_data(['Masses', 'Coordinates'])
 
 		# initial guess using every particle
-		if guess == None:
+		if guess is None:
 			com = utils.com_define(self.data_fields['Masses'], self.data_fields['Coordinates'])
 		else: # or from the user
 			com = deepcopy(guess) # deepcopy so kwarg remains unchanged on successive calls
@@ -512,7 +512,7 @@ class snapshot:
 		'''
 
 		J = self.find_angular_momentum_direction(**kwargs)
-		mat = utils.find_alignment_rotation(J)
+		mat = utils.find_alignment_rotation(J.value)
 		self.apply_rotation(mat)
 
 	def density_projection(self, axis:int=2, bins:int|list=[200,200], mass_weight:bool=True, plot:bool=True, 
@@ -591,7 +591,7 @@ class snapshot:
 
 		return dens, xbins, ybins
 
-	def density_profile(self, rmin:float=0., rmax:float=150., nbins:int=100, log_bins:bool=False, plot:bool=True, plotName:bool|str=False) -> tuple[np.ndarray, np.ndarray]:
+	def density_profile(self, rmin:float=0., rmax:float=150., nbins:int=100, log_bins:bool=False, plot:bool=True, plot_name:bool|str=False) -> tuple[np.ndarray, np.ndarray]:
 		'''density_profile computes the density profile of a halo
 		Note: snpshot must be centered (with e.g. snap.apply_center()) first! 
 
@@ -640,8 +640,8 @@ class snapshot:
 			plt.ylabel('$\\rho(r)$ $[M_{\\odot}/kpc^{3}]$')
 			plt.xlabel('r [kpc]')
 
-			if plotName:
-				plt.savefig(plotName)
+			if plot_name:
+				plt.savefig(plot_name)
 				plt.close()
 			else:
 				plt.show()
@@ -688,6 +688,15 @@ class snapshot:
 			pot = pot[slice]
 
 		phi, xbins, ybins, _ = binned_statistic_2d(pos[:,j], pos[:,i], pot, bins=bins, statistic='mean')
+
+		if plot:
+			plt.imshow(phi, origin='lower', extent=[xbins[0], xbins[-1], ybins[0], ybins[-1]])
+
+			if plot_name:
+				plt.savefig(plot_name)
+				plt.close()
+			else:
+				plt.show()
 
 		return phi, xbins, ybins
 

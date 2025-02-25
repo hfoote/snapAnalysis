@@ -678,7 +678,7 @@ class snapshot:
 
 		# query the tree for the distances to the k_max-th nearest neighbors
 		dist, _ = tree.query(points, k=[k_max])
-		m = self.read_masstable*k_max
+		m = self.read_masstable()*k_max*self.field_units['Masses']
 		v = (4./3.*np.pi*(dist.flatten() * self.field_units['Coordinates'])**3.)
 
 		return m/v

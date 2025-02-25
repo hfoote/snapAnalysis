@@ -671,16 +671,16 @@ class snapshot:
 			Array of length N containing the value of the density field at the input points
 		'''
 
-		self.load_particle_data(['Coordinates'])
+		self.load_particle_data(['Coordinates', 'Masses'])
 
 		# construct a KD Tree for nearest-neighbor lookup
 		tree = KDTree(self.data_fields['Coordinates'])
 
 		# query the tree for the distances to the k_max-th nearest neighbors
-		dist, _ = tree.query(points, k=[k_max])
-		m = self.read_masstable()*k_max*self.field_units['Masses']
+		dist, idx = tree.query(points, k=[k_max])
+		m = k_max*self.data_fields['Masses'][0]
 		v = (4./3.*np.pi*(dist.flatten() * self.field_units['Coordinates'])**3.)
-
+		
 		return m/v
 
 
@@ -741,4 +741,5 @@ class snapshot:
 
 		
 		
+
 

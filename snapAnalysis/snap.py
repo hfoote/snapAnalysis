@@ -10,6 +10,7 @@ from snapAnalysis import utils
 import warnings
 from copy import deepcopy
 from scipy.stats import binned_statistic_2d
+from scipy.spatial import KDTree
 
 class snapshot:
 	''' The main class of snapAnalysis, which reads and stores a single particle type from a single gagdet/arepo format hdf5 snapshot. 
@@ -647,6 +648,41 @@ class snapshot:
 				plt.show()
 
 		return bin_centers, rho
+	
+	def density_points(self, points:np.ndarray, k_max:int=1000) -> np.ndarray:
+		'''density_points computes the local density field at a specified collection of 
+		points using the k_max-th nearest particles to the point. 
+
+		In practice, the density at a local point is calculated as the mass of k_max particles,
+		divided by the volume of a sphere with radius equal to the distance to the k_max-th
+		nearest-neighbor. 
+
+		Parameters
+		----------
+		points : np.ndarray
+			Nx3 array of points at which to compute the density 
+		k_max : int, optional
+			maximum nearest neighbor to use in density calculation, i.e. the defualt of 1000
+			uses the 1000 nearest-neighbors. 
+
+		Returns
+		-------
+		np.ndarray
+			Array of length N containing the value of the density field at the input points
+		'''
+
+		self.load_particle_data(['Coordinates'])
+
+		# construct a KD Tree for nearest-neighbor lookup
+		tree = KDTree(self.data_fields['Coordinates'])
+
+		# query the tree for the distances to the k_max-th nearest neighbors
+		dist, _ = tree.query(points, k=[k_max])
+		m = self.read_masstable*k_max
+		v = (4./3.*np.pi*(dist.flatten() * self.field_units['Coordinates'])**3.)
+
+		return m/v
+
 
 	def potential_projection(self, axis:int=2, bins:int|list=[200,200], plot:bool=True, plot_name:bool|str=False, 
 						  slice_width:bool|float=False) -> tuple[np.ndarray, np.ndarray, np.ndarray]:

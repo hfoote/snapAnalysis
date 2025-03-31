@@ -43,6 +43,8 @@ def test_CDM_workflow(dm_snap):
 	dm_snap.density_projection(slice_width=10.*u.kpc, plot_name='tests/density_plot_test.png')
 	# as well as the halo's density profile
 	dm_snap.density_profile(plot_name='tests/density_profile_test.png')
+	# and anisotropy profile
+	dm_snap.anisotropy_profile(plot_name='tests/beta_profile_test.png')
 
 	# later, they decide to load the potential at the particle locations, 
 	dm_snap.load_particle_data(['Potential'])
@@ -54,4 +56,6 @@ def test_CDM_workflow(dm_snap):
 	# cleanup
 	os.remove('tests/density_plot_test.png')
 	os.remove('tests/density_profile_test.png')
+	os.remove('tests/beta_profile_test.png')
 	os.remove('tests/potential_plot_test.png')
+	

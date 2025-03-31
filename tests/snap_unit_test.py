@@ -16,9 +16,15 @@ def star_snap():
 	s = snapshot('tests/example_snaps/snap_000.hdf5', 4)
 	return s
 
+@pytest.fixture
+def binary_snap():
+	s = snapshot('tests/example_snaps/snap_binary_000', 1, file_format=2)
+	return s
+
 ## tests for I/O
 @pytest.mark.parametrize("snap, expected", [("dm_snap", {'fdm':False, 'time':0.*u.Gyr, 'box_size':0., 'N':10000}),
-									       ("star_snap", {'fdm':False, 'time':0.*u.Gyr, 'box_size':0., 'N':0})])
+											("binary_snap", {'fdm':False, 'time':0.*u.Gyr, 'box_size':0., 'N':10000}),
+									        ("star_snap", {'fdm':False, 'time':0.*u.Gyr, 'box_size':0., 'N':0})])
 def test_can_read_metadata(snap, expected, request):
 	s = request.getfixturevalue(snap)
 	assert s.fdm == expected['fdm'], "DM type detection failed!"
@@ -33,8 +39,11 @@ def test_unit_detection(dm_snap):
 	assert (dm_snap.field_units['Velocities'] - 1.0*u.km/u.s)/(1.0*u.km/u.s) < unit_tol, "Velocity unit detection failed!"
 	assert (dm_snap.field_units['Masses'] - 1e10*u.Msun)/(1e10*u.Msun) < unit_tol, "Mass unit detection failed!"
 
-def test_can_read_field(dm_snap):
-	assert np.allclose(dm_snap.read_field('Coordinates')[0], np.array([-34.63336945, -66.06946564, 172.63697815])), "Particle data reading failed!"
+@pytest.mark.parametrize("snap, expected", [("dm_snap", np.array([-34.63336945, -66.06946564, 172.63697815])),
+											("binary_snap", np.array([-34.63336945, -66.06946564, 172.63697815]))])
+def test_can_read_field(snap, expected, request):
+	s = request.getfixturevalue(snap)
+	assert np.allclose(s.read_field('Coordinates')[0], expected), "Particle data reading failed!"
 
 def test_can_read_masstable(dm_snap):
 	assert (dm_snap.read_masstable() == 0.001799996432347745), "Failed to read masstable!"

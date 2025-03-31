@@ -11,13 +11,14 @@ import warnings
 from copy import deepcopy
 from scipy.stats import binned_statistic_2d
 from scipy.spatial import KDTree
+from pygadgetreader import readheader, readsnap
 
 class snapshot:
 	''' The main class of snapAnalysis, which reads and stores a single particle type from a single gagdet/arepo format hdf5 snapshot. 
 	Methods provide common analysis routines such as computing density fields, centering, rotations, etc.
 	'''
 
-	def __init__(self, filename:str, ptype:int) -> None:
+	def __init__(self, filename:str, ptype:int, file_format:int=3) -> None:
 		'''__init__ creates a snap object and stores useful metadata.
 
 		Parameters
@@ -26,9 +27,13 @@ class snapshot:
 			Name of the simulation snapshot to read
 		ptype : int
 			Integer particle type 
+		file_format : int, optional
+			Snapshot file format, allowed values are 1, 2 (Gadget binaries)
+			or 3 (hdf5). Default is 3.  
 		'''
 
 		self.filename = filename
+		self.file_format = file_format
 		self.ptype = ptype
 		self.fdm = False
 		self.subset = False 
@@ -47,22 +52,55 @@ class snapshot:
 							'PsiIm':None
 							}
 
-		with h5py.File(self.filename, 'r') as f:
+		if self.file_format == 3: # hdf5 file
+			with h5py.File(self.filename, 'r') as f:
 
-			if 'BECDM' in f['Config'].attrs.keys():
-				self.fdm = True
-				self.N_cells = int(f['Config'].attrs['PMGRID'])
-				self.m_axion_Ev = f['Parameters'].attrs['AxionMassEv']*u.eV 
+				if 'BECDM' in f['Config'].attrs.keys():
+					self.fdm = True
+					self.N_cells = int(f['Config'].attrs['PMGRID'])
+					self.m_axion_Ev = f['Parameters'].attrs['AxionMassEv']*u.eV 
 
-			self.vel_unit = (f['Parameters'].attrs['UnitVelocity_in_cm_per_s']*u.cm/u.s).to(u.km/u.s)
-			self.length_unit = (f['Parameters'].attrs['UnitLength_in_cm']*u.cm).to(u.kpc)
-			self.mass_unit = (f['Parameters'].attrs['UnitMass_in_g']*u.g).to(u.Msun)
+				self.vel_unit = (f['Parameters'].attrs['UnitVelocity_in_cm_per_s']*u.cm/u.s).to(u.km/u.s)
+				self.length_unit = (f['Parameters'].attrs['UnitLength_in_cm']*u.cm).to(u.kpc)
+				self.mass_unit = (f['Parameters'].attrs['UnitMass_in_g']*u.g).to(u.Msun)
+				self.time_unit = (self.length_unit / self.vel_unit).to(u.Gyr)
+				
+				self.box_size = f['Header'].attrs['BoxSize']
+				self.box_half = self.box_size/2.
+				self.time = f['Header'].attrs['Time']*self.time_unit
+				self.N = f['Header'].attrs['NumPart_ThisFile'][ptype]
+		
+		elif (self.file_format == 1) or (self.file_format == 2): # gadget binary
+			# if the header fields throw SystemExit, pygadgetreader can't find them. 
+			# In each case, we'll set the defaults manually if this happens. 
+			try:
+				self.h = readheader(self.filename, 'h')
+			except SystemExit: # if h is unspecified, set to 1
+				self.h = 1. 
+
+			self.vel_unit = u.km/u.s
+			self.length_unit = u.kpc/self.h
+			self.mass_unit = 1e10*u.Msun/self.h
 			self.time_unit = (self.length_unit / self.vel_unit).to(u.Gyr)
 			
-			self.box_size = f['Header'].attrs['BoxSize']
+			try: 
+				self.box_size = readheader(self.filename, 'boxsize')
+			except SystemExit: # if box size is unspecified, there is no boundary
+				self.box_size = 0.
+
 			self.box_half = self.box_size/2.
-			self.time = f['Header'].attrs['Time']*self.time_unit
-			self.N = f['Header'].attrs['NumPart_ThisFile'][ptype]
+			self.time = readheader(self.filename, 'time')*self.time_unit
+			self.N = readheader(self.filename, 'npartThisFile')[self.ptype]
+			
+			# conversions between hdf5 and binary field naming conventions
+			self.field_name_lookup = {'Coordinates':'pos', 
+					 'Velocities':'vel', 
+					 'Masses':'mass', 
+					 'ParticleIDs':'pid' 
+			}
+
+		else:
+			raise ValueError("Invalid snapshot format specification!")
 
 		self.G = const.G.to(self.length_unit * self.vel_unit**2 / self.mass_unit)
 		self.field_units = {'Coordinates':self.length_unit, 
@@ -78,6 +116,10 @@ class snapshot:
 	def print_structure(self):
 		'''Displays the file structure of the snapshot.
 		'''
+
+		if self.file_format != 3:
+			raise RuntimeError("File structure not available for Gadget binary files.")
+
 		print('File structure of '+self.filename)
 		with h5py.File(self.filename, 'r') as f:
 			names = f.keys() # get group names
@@ -100,23 +142,31 @@ class snapshot:
 		'''
 		print('___________________________________________')
 		print('Header of '+self.filename)
-		with h5py.File(self.filename, 'r') as f:
-			try: # open header, if it doesn't work, there is no header
-				head = f['Header']
-			except KeyError:
-				print("Either the header does not have the name 'Header' or it does not exist.")
-				raise
-			# print each key and what it contains
-			print('\nKEYS')
-			print('--------')
-			attList = head.attrs.keys()
-			for atr in attList: # print all attributes in the header, with their contents
-				print(atr+':',head.attrs[atr])
 
-			print('\nDATA SETS')
-			print('--------')
-			for data in head: # print all data sets in the header, with their contents
-				print(data+':',head[data])
+		if self.file_format == 3 :
+			with h5py.File(self.filename, 'r') as f:
+				try: # open header, if it doesn't work, there is no header
+					head = f['Header']
+				except KeyError:
+					print("Either the header does not have the name 'Header' or it does not exist.")
+					raise
+				# print each key and what it contains
+				print('\nKEYS')
+				print('--------')
+				attList = head.attrs.keys()
+				for atr in attList: # print all attributes in the header, with their contents
+					print(atr+':',head.attrs[atr])
+
+				print('\nDATA SETS')
+				print('--------')
+				for data in head: # print all data sets in the header, with their contents
+					print(data+':',head[data])
+		
+		else:
+			head = readheader(self.filename, 'header')
+			attList = head.keys()
+			for atr in attList: # print all attributes in the header, with their contents
+				print(atr+':',head[atr])
 				
 	def read_field(self, field:str) -> np.ndarray:
 		'''read_field returns one data field of one particle type 
@@ -135,8 +185,11 @@ class snapshot:
 		if self.subset:
 			raise RuntimeError("Cannot read new fields after a subset of particles has been selected!")
 		
-		with h5py.File(self.filename, 'r') as f:
-			data = np.array(f[f'PartType{self.ptype}/{field}'])
+		if self.file_format == 3:
+			with h5py.File(self.filename, 'r') as f:
+				data = np.array(f[f'PartType{self.ptype}/{field}'])
+		else:
+			data = readsnap(self.filename, self.field_name_lookup[field], self.ptype)
 
 		return data
 	
@@ -148,6 +201,8 @@ class snapshot:
 		astropy Quantity
 			masstable
 		'''
+		if self.file_format != 3:
+			raise RuntimeError("Gadget binary files do not have a masstable.")
 
 		with h5py.File(self.filename, 'r') as f:
 			masstable = f['Header'].attrs['MassTable'][self.ptype]

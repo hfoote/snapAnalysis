@@ -758,7 +758,7 @@ class snapshot:
 			else:
 				plt.show()
 
-		return bins, beta
+		return bin_centers, beta
 
 	def potential_projection(self, axis:int=2, bins:int|list=[200,200], plot:bool=True, plot_name:bool|str=False, 
 						  slice_width:bool|float=False) -> tuple[np.ndarray, np.ndarray, np.ndarray]:

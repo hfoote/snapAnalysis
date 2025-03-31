@@ -10,6 +10,7 @@ from snapAnalysis import utils
 import warnings
 from copy import deepcopy
 from scipy.stats import binned_statistic_2d
+from scipy.stats import binned_statistic
 from scipy.spatial import KDTree
 
 class snapshot:
@@ -332,7 +333,6 @@ class snapshot:
 			
 			self.data_fields['Velocities'] -= vel_center[None, :]
 			self.vel_centered = True
-		
 
 	def find_position_center(self, guess:None|np.ndarray=None, r_start:None|float=None, vol_dec:float=3., delta:float=0.01, N_min:int=1000, verbose:bool=False) -> np.ndarray:
 		'''find_position_center finds the center of mass of the snapshot via the shrinking-spheres method.
@@ -683,6 +683,82 @@ class snapshot:
 		
 		return m/v
 
+	def anisotropy_profile(self, rmin:float=0., rmax:float=150., nbins:int=100, log_bins:bool=False, plot:bool=True, plot_name:bool|str=False) -> tuple[np.ndarray, np.ndarray]:
+		'''anisotropy_profile calculates the velocity anisotropy profile of a halo, given by
+		Eqn 4.61 of Binney & Tremaine
+
+		Parameters
+		----------
+		rmin : float, optional
+			min. radius, by default 0.
+		rmax : float, optional
+			max. radius, by default 150.
+		nbins : int, optional
+			number of radial bins, by default 100
+		log_bins : bool, optional
+			If True, make logarithmically spaced bins instead of linearly spaced bins, by default False
+		plot : bool, optional
+			show a plot of the computed profile, by default True
+		plot_name : bool | str, optional
+			if a str, saves the plot with this filename, by default False
+
+		Returns
+		-------
+		np.ndarray :
+			radial points / bin centers
+		np.ndarray :
+			value of the anisotropy profile at the bin centers
+		'''
+
+		if (not self.pos_centered) | (not self.vel_centered):
+			warnings.warn("Snapshot has not been centered! Calculating an anisotropy profile on an un-centered snapshot may give garbage results.")
+
+		self.load_particle_data(['Coordinates', 'Velocities'])
+		pos = self.data_fields['Coordinates']
+		pos_spherical = utils.cartesian_to_spherical(pos)
+
+		r = pos_spherical[:,0]
+		theta = pos_spherical[:,1]
+		phi = pos_spherical[:,2]
+
+		vel = self.data_fields['Velocities']
+		vx = vel[:,0]
+		vy = vel[:,1]
+		vz = vel[:,2]
+
+		v_r = np.sin(theta)*np.cos(phi)*vx + \
+			 np.sin(theta)*np.sin(phi)*vy + \
+			 np.cos(theta)*vz
+		v_theta = np.cos(theta)*np.cos(phi)*vx + \
+			    np.cos(theta)*np.sin(phi)*vy - \
+			    np.sin(theta)*vz
+		v_phi = -np.sin(phi)*vx + np.cos(phi)*vy
+
+		if log_bins:
+			bins = np.logspace(np.log10(rmin), np.log10(rmax), nbins+1)
+		else:
+			bins = np.linspace(rmin, rmax, nbins+1)
+
+		sigma_r, _, _ = binned_statistic(r, v_r, statistic='std', bins=bins)
+		sigma_theta, _, _ = binned_statistic(r, v_theta, statistic='std', bins=bins)
+		sigma_phi, _, _ = binned_statistic(r, v_phi, statistic='std', bins=bins)
+
+		beta = 1. - ((sigma_phi**2. + sigma_theta**2.) / (2.*sigma_r**2.))
+
+		bin_centers = (bins[1:] + bins[:-1])/2.
+
+		if plot:
+			plt.plot(bin_centers, beta)
+			plt.ylabel('$\\beta(r)$')
+			plt.xlabel('r [kpc]')
+
+			if plot_name:
+				plt.savefig(plot_name)
+				plt.close()
+			else:
+				plt.show()
+
+		return bins, beta
 
 	def potential_projection(self, axis:int=2, bins:int|list=[200,200], plot:bool=True, plot_name:bool|str=False, 
 						  slice_width:bool|float=False) -> tuple[np.ndarray, np.ndarray, np.ndarray]:

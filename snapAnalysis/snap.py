@@ -72,9 +72,8 @@ class snapshot:
 			self.file_format = 2
 
 			# if the header fields throw SystemExit, pygadgetreader can't find them. 
-			# these fields should always exist - if they don't, throw an error.
+			# this field should always exist - if it doesn't, throw an error.
 			try:
-				self.time = readheader(self.filename, 'time')*self.time_unit
 				self.N = readheader(self.filename, 'npartThisFile')[self.ptype]
 			except SystemExit:
 				raise FileNotFoundError('File could not be opened. It either does not exist, or has an unrecognized format.')
@@ -85,18 +84,18 @@ class snapshot:
 			except SystemExit: # if h is unspecified, set to 1
 				self.h = 1. 
 
-			self.vel_unit = u.km/u.s
-			self.length_unit = u.kpc/self.h
-			self.mass_unit = 1e10*u.Msun/self.h
-			self.time_unit = (self.length_unit / self.vel_unit).to(u.Gyr)
-			
 			try: 
 				self.box_size = readheader(self.filename, 'boxsize')
 			except SystemExit: # if box size is unspecified, there is no boundary
 				self.box_size = 0.
 
-			self.box_half = self.box_size/2.
+			self.vel_unit = u.km/u.s
+			self.length_unit = u.kpc/self.h
+			self.mass_unit = 1e10*u.Msun/self.h
+			self.time_unit = (self.length_unit / self.vel_unit).to(u.Gyr)
 			
+			self.box_half = self.box_size/2.
+			self.time = readheader(self.filename, 'time')*self.time_unit
 			
 			# conversions between hdf5 and binary field naming conventions
 			self.field_name_lookup = {'Coordinates':'pos', 

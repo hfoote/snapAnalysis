@@ -18,7 +18,7 @@ def star_snap():
 
 @pytest.fixture
 def binary_snap():
-	s = snapshot('tests/example_snaps/snap_binary_000', 1, file_format=2)
+	s = snapshot('tests/example_snaps/snap_binary_000', 1)
 	return s
 
 ## tests for I/O

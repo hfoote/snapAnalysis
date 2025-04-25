@@ -18,7 +18,7 @@ class snapshot:
 	Methods provide common analysis routines such as computing density fields, centering, rotations, etc.
 	'''
 
-	def __init__(self, filename:str, ptype:int, file_format:int=3) -> None:
+	def __init__(self, filename:str, ptype:int) -> None:
 		'''__init__ creates a snap object and stores useful metadata.
 
 		Parameters
@@ -27,13 +27,10 @@ class snapshot:
 			Name of the simulation snapshot to read
 		ptype : int
 			Integer particle type 
-		file_format : int, optional
-			Snapshot file format, allowed values are 1, 2 (Gadget binaries)
-			or 3 (hdf5). Default is 3.  
 		'''
 
 		self.filename = filename
-		self.file_format = file_format
+		self.file_format = 3 # try hdf5 file first
 		self.ptype = ptype
 		self.fdm = False
 		self.subset = False 
@@ -52,7 +49,7 @@ class snapshot:
 							'PsiIm':None
 							}
 
-		if self.file_format == 3: # hdf5 file
+		try: # try opening as hdf5
 			with h5py.File(self.filename, 'r') as f:
 
 				if 'BECDM' in f['Config'].attrs.keys():
@@ -70,7 +67,8 @@ class snapshot:
 				self.time = f['Header'].attrs['Time']*self.time_unit
 				self.N = f['Header'].attrs['NumPart_ThisFile'][ptype]
 		
-		elif (self.file_format == 1) or (self.file_format == 2): # gadget binary
+		except OSError: # if the file can't be opened, try it as a gadget binary
+			self.file_format = 2
 			# if the header fields throw SystemExit, pygadgetreader can't find them. 
 			# In each case, we'll set the defaults manually if this happens. 
 			try:
@@ -99,8 +97,8 @@ class snapshot:
 					 'ParticleIDs':'pid' 
 			}
 
-		else:
-			raise ValueError("Invalid snapshot format specification!")
+		except:
+			raise RuntimeError("Snapshot file format not recognized!")
 
 		self.G = const.G.to(self.length_unit * self.vel_unit**2 / self.mass_unit)
 		self.field_units = {'Coordinates':self.length_unit, 

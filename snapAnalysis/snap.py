@@ -70,8 +70,16 @@ class snapshot:
 		
 		except OSError: # if the file can't be opened, try it as a gadget binary
 			self.file_format = 2
+
 			# if the header fields throw SystemExit, pygadgetreader can't find them. 
-			# In each case, we'll set the defaults manually if this happens. 
+			# these fields should always exist - if they don't, throw an error.
+			try:
+				self.time = readheader(self.filename, 'time')*self.time_unit
+				self.N = readheader(self.filename, 'npartThisFile')[self.ptype]
+			except SystemExit:
+				raise FileNotFoundError('File could not be opened. It either does not exist, or has an unrecognized format.')
+			
+			# Other fields may or may not be specified - we'll set the defaults manually if they are not. 
 			try:
 				self.h = readheader(self.filename, 'h')
 			except SystemExit: # if h is unspecified, set to 1
@@ -88,8 +96,7 @@ class snapshot:
 				self.box_size = 0.
 
 			self.box_half = self.box_size/2.
-			self.time = readheader(self.filename, 'time')*self.time_unit
-			self.N = readheader(self.filename, 'npartThisFile')[self.ptype]
+			
 			
 			# conversions between hdf5 and binary field naming conventions
 			self.field_name_lookup = {'Coordinates':'pos', 
@@ -97,9 +104,6 @@ class snapshot:
 					 'Masses':'mass', 
 					 'ParticleIDs':'pid' 
 			}
-
-		except:
-			raise RuntimeError("Snapshot file format not recognized!")
 
 		self.G = const.G.to(self.length_unit * self.vel_unit**2 / self.mass_unit)
 		self.field_units = {'Coordinates':self.length_unit, 

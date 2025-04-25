@@ -189,7 +189,7 @@ class snapshot:
 			with h5py.File(self.filename, 'r') as f:
 				data = np.array(f[f'PartType{self.ptype}/{field}'])
 		else:
-			data = readsnap(self.filename, self.field_name_lookup[field], self.ptype)
+			data = readsnap(self.filename, self.field_name_lookup[field], self.ptype, suppress=1)
 
 		return data
 	

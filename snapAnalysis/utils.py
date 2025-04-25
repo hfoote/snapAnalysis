@@ -78,7 +78,7 @@ def get_vslice_indices(pos:np.ndarray, slice:float, axis:int) -> np.ndarray:
 
 def get_snaps(dir:str, ext:str='.hdf5', prefix:str='snap_') -> np.ndarray:
 	'''get_snaps returns an ordered list of all snapshots in a directory. 
-	Original code by Himansh Rathore
+	Adapted from code by Himansh Rathore
 
 	Parameters
 	----------
@@ -99,7 +99,7 @@ def get_snaps(dir:str, ext:str='.hdf5', prefix:str='snap_') -> np.ndarray:
 	nsnaps = len(snap_list)
 
 	if (nsnaps == 0):
-		raise RuntimeError('No files found !')
+		raise RuntimeError('No files found!')
 
 	current_order = np.zeros(nsnaps)
 

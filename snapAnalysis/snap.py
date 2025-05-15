@@ -45,7 +45,7 @@ class snapshot:
 							'Masses':None, 
 							'ParticleIDs':None, 
 							'Potential':None, 
-							'Accelerations':None, 
+							'Acceleration':None, 
 							'PsiRe':None, 
 							'PsiIm':None
 							}
@@ -110,7 +110,7 @@ class snapshot:
 							'Masses':self.mass_unit, 
 							'ParticleIDs':u.dimensionless_unscaled, 
 							'Potential':self.vel_unit**2, 
-							'Accelerations':self.vel_unit**2/self.length_unit, 
+							'Acceleration':self.vel_unit**2/self.length_unit, 
 							'PsiRe':u.dimensionless_unscaled, 
 							'PsiIm':u.dimensionless_unscaled
 							}

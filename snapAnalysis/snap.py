@@ -530,6 +530,10 @@ class snapshot:
 			
 		self.data_fields['Velocities'] = (np.matmul(rot_mat, self.data_fields['Velocities'].T)).T
 
+		if self.check_if_field_read('Acceleration'):
+			self.data_fields['Acceleration'] = (np.matmul(rot_mat, self.data_fields['Acceleration'].T)).T
+
+
 	def find_angular_momentum_direction(self, r_max:u.Quantity|None=None) -> np.ndarray:
 		'''find_angular_momentum_direction Returns the normalized average specific angular momentum vector of 
 		the loaded particles. 

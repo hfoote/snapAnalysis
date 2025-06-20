@@ -6,7 +6,7 @@ from snapAnalysis.snap import snapshot
 from snapAnalysis.utils import get_snaps
 from glob import glob
 
-def orbit_com(sim_dir:str, part_type:int, out_file:None|str=None, select_IDs:None|tuple=None, use_guess:None|str=None, com_kwargs:dict={}, vel_kwargs:dict={}, verbose:bool=False) -> np.ndarray:
+def orbit_com(sim_dir:str, part_type:int, out_file:None|str=None, select_IDs:None|tuple=None, use_guess:None|str=None, com_kwargs:dict={}, vel_kwargs:dict={}, get_snaps_kwargs:dict={}, verbose:bool=False) -> np.ndarray:
 	'''orbit_com stores the center-of-mass position and velocity of the specified 
 
 	Parameters
@@ -27,6 +27,8 @@ def orbit_com(sim_dir:str, part_type:int, out_file:None|str=None, select_IDs:Non
 		kwargs for snap.find_position_center, by default {}
 	vel_kwargs : dict, optional
 		kwargs for snap.find_velocity_center, by default {}
+	get_snaps_kwargs : dict, optional
+		kwargs for utils.get_snaps, by default {}
 	verbose : bool, optional
 		print progress, by default False
 
@@ -35,8 +37,12 @@ def orbit_com(sim_dir:str, part_type:int, out_file:None|str=None, select_IDs:Non
 	np.ndarray
 		Nx7 array with [t,x,y,z,vx,vy,vz] at each timestep
 	'''
-
-	snap_names = get_snaps(sim_dir)
+	try:
+		snap_names = get_snaps(sim_dir) # try the common hdf5 naming convention
+	except RuntimeError: 
+		snap_names = get_snaps(sim_dir, ext='', prefix='snapshot_') # then try the common binary naming convention
+	except:
+		snap_names = get_snaps(sim_dir, **get_snaps_kwargs)
 
 	N_snaps = len(snap_names)
 	orbit = np.zeros([N_snaps, 7])

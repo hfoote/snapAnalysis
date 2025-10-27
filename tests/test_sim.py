@@ -21,9 +21,10 @@ def test_orbit_com():
         ]
     )
 
-    # A user wants to determine the COM position and velocity of the dark matter halo in
-    # the test simulation contained in tests/example_snaps.
-    # They specify a shrinking factor of 2, and save the COM data in a file called test_centers.txt
+    # A user wants to determine the COM position and velocity of the dark matter 
+    # halo in the test simulation contained in tests/example_snaps.
+    # They specify a shrinking factor of 2, and save the COM data in a 
+    # file called test_centers.txt
     test_file = "tests/test_centers.txt"
     orbit = orbit_com(
         "tests/example_snaps/", 1, com_kwargs={"vol_dec": 2.0}, out_file=test_file
@@ -31,8 +32,8 @@ def test_orbit_com():
 
     assert np.allclose(orbit, TEST_ARR), "Orbit determination failed!"
 
-    # Later, they want to use the stored centers, so they load the orbit file they saved earlier,
-    # and compare it to the output from the center finder.
+    # Later, they want to use the stored centers, so they load the orbit file 
+    # they saved earlier, and compare it to the output from the center finder.
     orbit_from_file = np.loadtxt(test_file)
 
     assert np.allclose(orbit_from_file, TEST_ARR), "Orbit file failed!"

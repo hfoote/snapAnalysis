@@ -25,11 +25,11 @@ def orbit_com(
     out_file : None or str, optional
             if not None, saves the orbit file under this name
     select_IDs : None or tuple, optional
-            min. and max. particle IDs for selection if desired, otherwise uses all particles
-            of the specified type.
+            min. and max. particle IDs for selection if desired, otherwise uses all 
+            particles of the specified type.
     use_guess : None or str ('previous')
-            specifies where the intial sphere is centered. None uses the com of every particle,
-            'previous' uses the previous snapshot's com.
+            specifies where the intial sphere is centered. None uses the com of 
+            every particle, 'previous' uses the previous snapshot's com.
     com_kwargs : dict, optional
             kwargs for snap.find_position_center, by default {}
     vel_kwargs : dict, optional

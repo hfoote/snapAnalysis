@@ -1,227 +1,241 @@
 # utility functions for snapAnalysis
 
 import numpy as np
-import astropy.units as u
-import astropy.constants as const
 from glob import glob
 import re
 
-def com_define(m:np.ndarray, pos:np.ndarray) -> np.ndarray:
-	'''com_define basic center-of-mass calculation
 
-	Parameters
-	----------
-	m : np.ndarray
-		particle masses
-	pos : np.ndarray
-		particle positions
+def com_define(m: np.ndarray, pos: np.ndarray) -> np.ndarray:
+    """com_define basic center-of-mass calculation
 
-	Returns
-	-------
-	np.ndarray
-		[x, y, z] center of mass
-	'''
+    Parameters
+    ----------
+    m : np.ndarray
+            particle masses
+    pos : np.ndarray
+            particle positions
 
-	tot_m = np.sum(m)
+    Returns
+    -------
+    np.ndarray
+            [x, y, z] center of mass
+    """
 
-	return np.sum(pos * m[:, None] / tot_m, axis=0)
+    tot_m = np.sum(m)
 
-def set_axes(ax:int) -> tuple[int, int]:
-	'''set_axes returns x and y axes for a plot based on the projection axis
+    return np.sum(pos * m[:, None] / tot_m, axis=0)
 
-	Parameters
-	----------
-	ax : int
-		projection axis index
 
-	Returns
-	-------
-	int :
-		plot x-axis index
-	int :
-		plot y-axis index
-	'''
-	if ax == 0 : # y-z plane
-		i = 1
-		j = 2
-	elif ax == 1 : # x-z plane
-		i = 0
-		j = 2
-	elif ax == 2 : # x-y plane
-		i = 0
-		j = 1
-	else :
-		raise ValueError("Invalid axis index")
-	
-	return i, j
+def set_axes(ax: int) -> tuple[int, int]:
+    """set_axes returns x and y axes for a plot based on the projection axis
 
-def get_vslice_indices(pos:np.ndarray, slice:float, axis:int) -> np.ndarray:
-	'''get_vslice_indices returns particle indices within a vertical slice
-	about the box midplane
+    Parameters
+    ----------
+    ax : int
+            projection axis index
 
-	Parameters
-	----------
-	pos : np.ndarray
-		paticle positions
-	slice : float
-		slice width in simulation units
-	axis : int
-		axis index along which the slice is taken
+    Returns
+    -------
+    int :
+            plot x-axis index
+    int :
+            plot y-axis index
+    """
+    if ax == 0:  # y-z plane
+        i = 1
+        j = 2
+    elif ax == 1:  # x-z plane
+        i = 0
+        j = 2
+    elif ax == 2:  # x-y plane
+        i = 0
+        j = 1
+    else:
+        raise ValueError("Invalid axis index")
 
-	Returns
-	-------
-	np.ndarray
-		array of indices to pos that specify which particles are in the slice
-	'''
+    return i, j
 
-	return np.where((np.abs(pos[:,axis]) <= (slice/2.)))
 
-def get_snaps(dir:str, ext:str='.hdf5', prefix:str='snap_') -> np.ndarray:
-	'''get_snaps returns an ordered list of all snapshots in a directory. 
-	Original code by Himansh Rathore
+def get_vslice_indices(pos: np.ndarray, slice: float, axis: int) -> np.ndarray:
+    """get_vslice_indices returns particle indices within a vertical slice
+    about the box midplane
 
-	Parameters
-	----------
-	dir : str
-		directory where snapshots are stored
-	ext : str, optional
-		snapshot file extension, by default '.hdf5'
-	prefix : str, optional
-		snapshot name prefix, by default 'snap_'
+    Parameters
+    ----------
+    pos : np.ndarray
+            paticle positions
+    slice : float
+            slice width in simulation units
+    axis : int
+            axis index along which the slice is taken
 
-	Returns
-	-------
-	np.ndarray
-		Ordered list of snapshots
-	'''
+    Returns
+    -------
+    np.ndarray
+            array of indices to pos that specify which particles are in the slice
+    """
 
-	snap_list = np.array(glob(dir + prefix + '*' + ext))
-	nsnaps = len(snap_list)
+    return np.where((np.abs(pos[:, axis]) <= (slice / 2.0)))
 
-	if (nsnaps == 0):
-		raise RuntimeError('No files found !')
 
-	current_order = np.zeros(nsnaps)
+def get_snaps(dir: str, ext: str = ".hdf5", prefix: str = "snap_") -> np.ndarray:
+    """get_snaps returns an ordered list of all snapshots in a directory.
+    Original code by Himansh Rathore
 
-	for i in range(nsnaps):
-		snap = snap_list[i]
-		result = re.search(prefix + '(.*)' + ext, snap)
-		current_order[i] += int(result.group(1))
-	
-	snap_list_ordered = snap_list[np.argsort(current_order)]
-	
-	return snap_list_ordered    
+    Parameters
+    ----------
+    dir : str
+            directory where snapshots are stored
+    ext : str, optional
+            snapshot file extension, by default '.hdf5'
+    prefix : str, optional
+            snapshot name prefix, by default 'snap_'
 
-def cartesian_to_spherical(coords:np.ndarray) -> np.ndarray:
-	'''cartesian_to_spherical transforms a set of Cartesian coordinates
-	to spherical coordinates, while preserving the shape of the input. 
+    Returns
+    -------
+    np.ndarray
+            Ordered list of snapshots
+    """
 
-	Parameters
-	----------
-	coords : np.array
-		Nx3 array of x,y,z coordinates
+    snap_list = np.array(glob(dir + prefix + "*" + ext))
+    nsnaps = len(snap_list)
 
-	Returns
-	-------
-	np.array
-		(r, theta (polar), phi (azimuth)) coordinates
-	'''
+    if nsnaps == 0:
+        raise RuntimeError("No files found !")
 
-	# make input 2D if required
-	if coords.ndim == 1:
-		coords = coords[np.newaxis, :]
-		remove_axis = True
-	else:
-		remove_axis = False
+    current_order = np.zeros(nsnaps)
 
-	r = np.sqrt(np.sum(coords**2, axis=1))
-	theta = np.arccos(coords[:,2]/r)
-	phi = np.arctan2(coords[:,1], coords[:,0])
+    for i in range(nsnaps):
+        snap = snap_list[i]
+        result = re.search(prefix + "(.*)" + ext, snap)
+        current_order[i] += int(result.group(1))
 
-	if remove_axis:
-		return np.hstack([r, theta, phi])
-	
-	return np.array([r, theta, phi]).T
+    snap_list_ordered = snap_list[np.argsort(current_order)]
 
-def cartesian_to_cylindrical(coords:np.ndarray) -> np.ndarray:
-	'''cartesian_to_cylindrical transforms a set of Cartesian coordinates
-	to cylindrical coordinates, while preserving the input shape.
+    return snap_list_ordered
 
-	Parameters
-	----------
-	coords : np.array
-		Nx3 array of x,y,z coordinates
 
-	Returns
-	-------
-	np.array
-		(rho, phi (azimuth), z) coordinates
-	'''
-	
-	# make input 2D if required
-	if coords.ndim == 1:
-		coords = coords[np.newaxis, :]
-		remove_axis = True
-	else:
-		remove_axis = False
+def cartesian_to_spherical(coords: np.ndarray) -> np.ndarray:
+    """cartesian_to_spherical transforms a set of Cartesian coordinates
+    to spherical coordinates, while preserving the shape of the input.
 
-	rho = np.sqrt(np.sum(coords[:,:2]**2, axis=1))
-	phi = np.arctan2(coords[:,1], coords[:,0])
+    Parameters
+    ----------
+    coords : np.array
+            Nx3 array of x,y,z coordinates
 
-	if remove_axis:
-		return np.hstack([rho, phi, coords[:,2]])
-	
-	return np.array([rho, phi, coords[:,2]]).T
+    Returns
+    -------
+    np.array
+            (r, theta (polar), phi (azimuth)) coordinates
+    """
 
-def rotation_matrix(alpha:float, beta:float, gamma:float) -> np.ndarray:
-	'''rotation_matrix returns the rotation matrix for a general intrinsic rotation
-	of yaw, pitch, roll (Tait-Bryan angles about z,y,x) alpha, beta, gamma, respectively. 
+    # make input 2D if required
+    if coords.ndim == 1:
+        coords = coords[np.newaxis, :]
+        remove_axis = True
+    else:
+        remove_axis = False
 
-	Parameters
-	----------
-	alpha : float
-		yaw angle (about z axis)
-	beta : float
-		pitch angle (about y axis)
-	gamma : float
-		roll angle (about x axis)
+    r = np.sqrt(np.sum(coords**2, axis=1))
+    theta = np.arccos(coords[:, 2] / r)
+    phi = np.arctan2(coords[:, 1], coords[:, 0])
 
-	Returns
-	-------
-	np.ndarray
-		rotation matrix
-	'''
+    if remove_axis:
+        return np.hstack([r, theta, phi])
 
-	Rz = np.array([[np.cos(alpha), -np.sin(alpha), 0], 
-				   [np.sin(alpha), np.cos(alpha), 0],
-				   [0, 0, 1]])
-	
-	Ry = np.array([[np.cos(beta), 0, np.sin(beta)], 
-				   [0, 1, 0],
-				   [-np.sin(beta), 0, np.cos(beta)]])
-	
-	Rx = np.array([[1, 0, 0], 
-				   [0, np.cos(gamma), -np.sin(gamma)],
-				   [0, np.sin(gamma), np.cos(gamma)]])
-	
-	return np.matmul(Rx, np.matmul(Ry, Rz))
+    return np.array([r, theta, phi]).T
 
-def find_alignment_rotation(vec:np.ndarray) -> np.ndarray:
-	'''find_alignment_rotation returns the rotation matrix needed to 
-	align the input vector with the positive z-axis
 
-	Parameters
-	----------
-	vec : np.ndarray
-		[x,y,z] vector
+def cartesian_to_cylindrical(coords: np.ndarray) -> np.ndarray:
+    """cartesian_to_cylindrical transforms a set of Cartesian coordinates
+    to cylindrical coordinates, while preserving the input shape.
 
-	Returns
-	-------
-	np.ndarray
-		rotation matrix
-	'''
+    Parameters
+    ----------
+    coords : np.array
+            Nx3 array of x,y,z coordinates
 
-	# get rotation angles first
-	_, theta, phi = cartesian_to_spherical(vec)
+    Returns
+    -------
+    np.array
+            (rho, phi (azimuth), z) coordinates
+    """
 
-	return rotation_matrix(-phi, -theta, 0.)
+    # make input 2D if required
+    if coords.ndim == 1:
+        coords = coords[np.newaxis, :]
+        remove_axis = True
+    else:
+        remove_axis = False
+
+    rho = np.sqrt(np.sum(coords[:, :2] ** 2, axis=1))
+    phi = np.arctan2(coords[:, 1], coords[:, 0])
+
+    if remove_axis:
+        return np.hstack([rho, phi, coords[:, 2]])
+
+    return np.array([rho, phi, coords[:, 2]]).T
+
+
+def rotation_matrix(alpha: float, beta: float, gamma: float) -> np.ndarray:
+    """rotation_matrix returns the rotation matrix for a general intrinsic rotation
+    of yaw, pitch, roll (Tait-Bryan angles about z,y,x) alpha, beta, gamma, respectively.
+
+    Parameters
+    ----------
+    alpha : float
+            yaw angle (about z axis)
+    beta : float
+            pitch angle (about y axis)
+    gamma : float
+            roll angle (about x axis)
+
+    Returns
+    -------
+    np.ndarray
+            rotation matrix
+    """
+
+    Rz = np.array(
+        [
+            [np.cos(alpha), -np.sin(alpha), 0],
+            [np.sin(alpha), np.cos(alpha), 0],
+            [0, 0, 1],
+        ]
+    )
+
+    Ry = np.array(
+        [[np.cos(beta), 0, np.sin(beta)], [0, 1, 0], [-np.sin(beta), 0, np.cos(beta)]]
+    )
+
+    Rx = np.array(
+        [
+            [1, 0, 0],
+            [0, np.cos(gamma), -np.sin(gamma)],
+            [0, np.sin(gamma), np.cos(gamma)],
+        ]
+    )
+
+    return np.matmul(Rx, np.matmul(Ry, Rz))
+
+
+def find_alignment_rotation(vec: np.ndarray) -> np.ndarray:
+    """find_alignment_rotation returns the rotation matrix needed to
+    align the input vector with the positive z-axis
+
+    Parameters
+    ----------
+    vec : np.ndarray
+            [x,y,z] vector
+
+    Returns
+    -------
+    np.ndarray
+            rotation matrix
+    """
+
+    # get rotation angles first
+    _, theta, phi = cartesian_to_spherical(vec)
+
+    return rotation_matrix(-phi, -theta, 0.0)

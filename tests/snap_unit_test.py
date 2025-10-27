@@ -37,7 +37,9 @@ def test_can_read_metadata(snap, expected, request):
 
 def test_unit_detection(dm_snap):
     print(dm_snap)
-    unit_tol = 1e-3  # 1 part in 1000 should account for rounding differences between unit specification in astropy vs gadget
+     # define tolerance - 1 part in 1000 should account for rounding differences 
+     # between unit specification in astropy vs gadget
+    unit_tol = 1e-3 
     assert (dm_snap.field_units["Coordinates"] - 1.0 * u.kpc) / (
         1.0 * u.kpc
     ) < unit_tol, "Length unit detection failed!"

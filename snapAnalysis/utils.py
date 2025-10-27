@@ -180,7 +180,8 @@ def cartesian_to_cylindrical(coords: np.ndarray) -> np.ndarray:
 
 def rotation_matrix(alpha: float, beta: float, gamma: float) -> np.ndarray:
     """rotation_matrix returns the rotation matrix for a general intrinsic rotation
-    of yaw, pitch, roll (Tait-Bryan angles about z,y,x) alpha, beta, gamma, respectively.
+    of yaw, pitch, roll (Tait-Bryan angles about z,y,x) alpha, beta, gamma, 
+    respectively.
 
     Parameters
     ----------

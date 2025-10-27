@@ -3,7 +3,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import h5py
-import astropy
 from astropy import units as u
 from astropy import constants as const
 from snapAnalysis import utils
@@ -178,7 +177,7 @@ class snapshot:
                 True if field has already been read, False otherwise
         """
 
-        if self.data_fields[field] == None:
+        if self.data_fields[field] is None:
             return False
 
         return True
@@ -280,11 +279,11 @@ class snapshot:
         m = self.m_axion_ev / const.c**2
 
         # reshape and sort arrays
+        IDs = self.data_fields["ParticleIDs"]
         IDsort = np.argsort(IDs)  # indices to sort the arrays in ID order
         self.arrange_fields(IDsort)
 
         # sort and reshape IDs and positions to their final forms
-        IDs = self.data_fields["ParticleIDs"]
         IDs = np.reshape(IDs, (self.N_cells, self.N_cells, self.N_cells), order="F")
         IDs = np.reshape(IDs, (self.N,), order="F")
         # do the same with positions
@@ -356,7 +355,7 @@ class snapshot:
         self.data_fields["Coordinates"] -= pos_center[None, :]
         self.pos_centered = True
 
-        if vel_center != None:
+        if vel_center is not None:
             if not self.check_if_field_read("Velocities"):
                 raise RuntimeError("Particle velocities not loaded!")
 
@@ -412,7 +411,7 @@ class snapshot:
         r_new = np.sqrt(np.sum(pos_new**2, axis=1))
 
         # shrink sphere
-        if r_start != None:
+        if r_start is not None:
             r_max = deepcopy(
                 r_start
             )  # deepcopy so kwarg remains unchanged on successive calls
@@ -549,7 +548,7 @@ class snapshot:
         pos = self.data_fields["Coordinates"]
         vel = self.data_fields["Velocities"]
 
-        if r_max != None:
+        if r_max is not None:
             r = np.sqrt(np.sum(pos**2), axis=1)
             idx = np.where(r <= r_max)
             pos = pos[idx]
@@ -578,7 +577,7 @@ class snapshot:
         mass_weight: bool = True,
         plot: bool = True,
         plot_name: bool | str = False,
-        slice_width: bool | float = False,
+        slice_width: None | float = None,
         normalization: bool = "surface",
     ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         """density_projection generates a density histogram projected along the specified
@@ -596,9 +595,9 @@ class snapshot:
                 create a plot of the density histogram, by default True
         plot_name : bool or str, optional
                 if not False, saves the plot under this file name, by default False
-        slice_width : int, optional
-                Leave as 0 to use the whole box. Otherwise, provide a distance in the length units of the snapshot
-        from the midplane along the specified axis to include., by default 0
+        slice_width : None | float, optional
+                A distance in the length units of the snapshot
+        from the midplane along the specified axis to include, by default None
         normalization : str, optional
                 "surface" (default) returns surface density,
                 "overdensity" returns the density contrast,
@@ -620,7 +619,7 @@ class snapshot:
 
         i, j = utils.set_axes(axis)
 
-        if slice_width != False:
+        if slice_width is not None:
             slice = utils.get_vslice_indices(pos, slice_width, axis)
             pos = pos[slice]
             m = m[slice]
@@ -640,7 +639,7 @@ class snapshot:
         elif normalization == "surface":
             bin_volume = (xbins[1] - xbins[0]) * (ybins[1] - ybins[0])
             dens /= bin_volume
-        elif (normalization == "volume") and (slice_width != 0):
+        elif (normalization == "volume") and (slice_width is not None):
             bin_volume = (
                 (xbins[1] - xbins[0]) * (ybins[1] - ybins[0]) * 2.0 * slice_width.value
             )
@@ -864,7 +863,7 @@ class snapshot:
         bins: int | list = [200, 200],
         plot: bool = True,
         plot_name: bool | str = False,
-        slice_width: bool | float = False,
+        slice_width: None | float = None,
     ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         """potential_projection bins the particles in the specified plane and finds the mean value of the potential within each bin.
 
@@ -878,9 +877,9 @@ class snapshot:
                 create a plot of the potential, by default True
         plot_name : bool | str, optional
                 if not False, saves the plot under this file name, by default False
-        slice_width : bool | float, optional
-                Leave as 0 to use the whole box. Otherwise, provide a distance in the length units of the snapshot
-        from the midplane along the specified axis to include, by default False
+        slice_width : None | float, optional
+                Leave as None to use the whole box. Otherwise, provide a distance in the length units of the snapshot
+        from the midplane along the specified axis to include, by default None
 
         Returns
         -------
@@ -898,7 +897,7 @@ class snapshot:
 
         i, j = utils.set_axes(axis)
 
-        if slice_width != False:
+        if slice_width is not None:
             slice = utils.get_vslice_indices(pos, slice_width, axis)
             pos = pos[slice]
             pot = pot[slice]

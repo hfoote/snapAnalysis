@@ -1,11 +1,8 @@
 # Routines for analyzing an entire simulation at once
 
 import numpy as np
-import matplotlib.pyplot as plt
 from snapAnalysis.snap import snapshot
 from snapAnalysis.utils import get_snaps
-from glob import glob
-
 
 def orbit_com(
     sim_dir: str,

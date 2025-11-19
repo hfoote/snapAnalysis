@@ -3,7 +3,7 @@
 
 def test_orbit_com():
     import numpy as np
-    from snapAnalysis.sim import orbit_com
+    from snapanalysis.sim import orbit_com
     import os
 
     TEST_ARR = np.array(

@@ -1,7 +1,7 @@
 # E2E tests for the functionality of snap objects
 # requires the example snapshots in tests/example_snaps/
 
-from snapAnalysis.snap import snapshot
+from snapanalysis.snap import snapshot
 import astropy.units as u
 import numpy as np
 import os

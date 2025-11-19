@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import h5py
 from astropy import units as u
 from astropy import constants as const
-from snapAnalysis import utils
+from . import utils
 import warnings
 from copy import deepcopy
 from scipy.stats import binned_statistic_2d

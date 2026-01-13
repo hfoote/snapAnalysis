@@ -1,28 +1,31 @@
-[build-system]
-requires = ["setuptools>61.0"]
-build_backend = "setuptools.build_meta"
-
 [project]
-name = "snapAnalysis"
-version = "0.0.1"
-authors = [
-  { name="Hayden R. Foote", email="haydenfoote@arizona.edu" },
-]
-description = "A package for analysis of gadget and arepo hdf5 snapshots."
+name = "snapanalysis"
+version = "0.1.0"
+description = "A package for analyzing N-body snapshots from Gadget and Arepo."
 readme = "README.md"
+authors = [
+    { name = "hfoote", email = "haydenfoote@arizona.edu" }
+]
 requires-python = ">=3.11"
-classifiers = [
-    "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: GPL-3.0-only",
-    "Topic :: Scientific/Engineering :: Astronomy",
+dependencies = [
+    "astropy>=5.0",
+    "h5py>=3.7.0",
+    "matplotlib>=3.8",
+    "numpy>=1.20,<2.0.0",
+    "scipy>=1.11.4",
 ]
 
-dependencies = [
-    "numpy>=1.20",
-    "astropy>=5.0",
-	  "h5py>=3.7.0",
-    "matplotlib>=3.8",
-    "scipy>=1.11.4"
+[project.scripts]
+snapanalysis = "snapanalysis:main"
+
+[build-system]
+requires = ["uv_build>=0.9.10,<0.10.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.1",
+    "ruff>=0.14.5",
 ]
 
 [project.urls]

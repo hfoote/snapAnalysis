@@ -3,7 +3,7 @@ import numpy as np
 
 
 def test_com_define() -> None:
-    from snapAnalysis.utils import com_define
+    from snapanalysis.utils import com_define
 
     pos = np.array(
         [
@@ -27,7 +27,7 @@ def test_com_define() -> None:
 
 
 def test_get_vslice_indices() -> None:
-    from snapAnalysis.utils import get_vslice_indices
+    from snapanalysis.utils import get_vslice_indices
 
     pos = np.array(
         [
@@ -51,7 +51,7 @@ def test_get_vslice_indices() -> None:
 
 
 def test_get_snaps() -> None:
-    from snapAnalysis.utils import get_snaps
+    from snapanalysis.utils import get_snaps
 
     expected = np.array(
         ["tests/example_snaps/snap_000.hdf5", "tests/example_snaps/snap_001.hdf5"]
@@ -65,7 +65,7 @@ def test_get_snaps() -> None:
 
 
 def test_cartesian_to_spherical() -> None:
-    from snapAnalysis.utils import cartesian_to_spherical
+    from snapanalysis.utils import cartesian_to_spherical
 
     test_vec_1d = np.ones(3)
     test_vec_2d = np.ones([2, 3])
@@ -81,7 +81,7 @@ def test_cartesian_to_spherical() -> None:
 
 
 def test_cartesian_to_cylindrical() -> None:
-    from snapAnalysis.utils import cartesian_to_cylindrical
+    from snapanalysis.utils import cartesian_to_cylindrical
 
     test_vec_1d = np.ones(3)
     test_vec_2d = np.ones([2, 3])
@@ -99,7 +99,7 @@ def test_cartesian_to_cylindrical() -> None:
 
 
 def test_find_alignment_rotation() -> None:
-    from snapAnalysis.utils import find_alignment_rotation
+    from snapanalysis.utils import find_alignment_rotation
 
     input = np.array([[23.0, 5.0, -64.0]])
     expected = np.array([[0.0, 0.0, 1.0]]) * np.linalg.norm(input[0])

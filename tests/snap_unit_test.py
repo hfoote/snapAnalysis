@@ -2,7 +2,7 @@
 # Requires the example snapshot in example_snaps/snap_000.hdf5
 
 import numpy as np
-from snapAnalysis.snap import snapshot
+from snapanalysis.snap import snapshot
 import astropy.units as u
 import pytest
 

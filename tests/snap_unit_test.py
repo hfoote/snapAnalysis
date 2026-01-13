@@ -62,7 +62,7 @@ def test_can_read_masstable(dm_snap):
     assert dm_snap.read_masstable() == 0.001799996432347745, "Failed to read masstable!"
 
 
-def test_can_select_particles(dm_snap):
+def test_can_select_particles_by_id_range(dm_snap):
     min_id = 1000
     max_id = 2000
     dm_snap.select_particles((min_id, max_id))
@@ -87,3 +87,16 @@ def test_centering(dm_snap):
         dm_snap.find_velocity_center(com),
         np.array([-2.337177, -0.104841, -1.221633]) * u.km / u.s,
     ), "Velocity center calculation failed!"
+
+
+def test_density_points_returns_correct_central_density(dm_snap):
+    k = 100
+    central_density = dm_snap.density_points(
+        np.zeros(3), k_max=k
+    )[0].value
+
+    particle_radii = np.sqrt(np.sum(dm_snap.data_fields['Coordinates']**2, axis=1))
+    volume = 4.0 * np.pi / 3.0 * (np.partition(particle_radii, k-1)[k-1])**3
+    emp_density = (dm_snap.data_fields['Masses'][0] * k / volume).value
+
+    assert np.abs(central_density/emp_density - 1) < 1e-6

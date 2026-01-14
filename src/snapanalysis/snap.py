@@ -202,24 +202,38 @@ class snapshot:
                 continue
             self.data_fields[field] = self.data_fields[field][indices]
 
-    def select_particles(self, ID_range: tuple) -> None:
+    def select_particles(self, selection: tuple | np.ndarray) -> None:
         """select_particles selects the desired ID range
 
         Parameters
         ----------
-        ID_range : tuple
-                min and max ID values to keep (inclusive)
+        selection : tuple or np.ndarray
+                Tuple of min and max ID values to keep (inclusive),
+                or a boolean array to be used as a mask for the particles
         """
 
         self.load_particle_data(["ParticleIDs"])
         IDs = self.data_fields["ParticleIDs"]
 
+        if isinstance(selection, np.ndarray):
+            if len(selection) != len(IDs):
+                raise ValueError(
+                    "Mask length must equal the number of particles!"
+                )
+        elif not isinstance(selection, tuple):
+            raise TypeError(
+                "Selection must be a tuple of min and max IDs or a boolean array mask"
+            )
+
         for field in self.data_fields.keys():
             if not self.check_if_field_read(field):
                 continue
-            self.data_fields[field] = self.data_fields[field][
-                np.where((IDs >= ID_range[0]) & (IDs <= ID_range[1]))
-            ]
+            if isinstance(selection, tuple):
+                self.data_fields[field] = self.data_fields[field][
+                    np.where((IDs >= selection[0]) & (IDs <= selection[1]))
+                ]
+            else:
+                self.data_fields[field] = self.data_fields[field][selection]
 
         self.subset = True
 

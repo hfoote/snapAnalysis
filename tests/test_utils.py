@@ -64,36 +64,46 @@ def test_get_snaps() -> None:
     return None
 
 
-def test_cartesian_to_spherical() -> None:
+@pytest.mark.parametrize(
+    "input, expected",
+    [
+        (np.ones(3), np.array([np.sqrt(3), np.arccos(1.0 / np.sqrt(3)), np.pi / 4.0])),
+        (
+            np.ones([2, 3]), 
+            np.vstack([
+                np.array([np.sqrt(3), np.arccos(1.0 / np.sqrt(3)), np.pi / 4.0]), 
+                np.array([np.sqrt(3), np.arccos(1.0 / np.sqrt(3)), np.pi / 4.0])
+            ])
+        )
+    ]
+)
+def test_cartesian_to_spherical(input, expected) -> None:
     from snapanalysis.utils import cartesian_to_spherical
 
-    test_vec_1d = np.ones(3)
-    test_vec_2d = np.ones([2, 3])
-
-    expected = np.array([np.sqrt(3), np.arccos(1.0 / np.sqrt(3)), np.pi / 4.0])
-
-    assert np.allclose(cartesian_to_spherical(test_vec_1d), expected), (
+    assert np.allclose(cartesian_to_spherical(input), expected), (
         "Spherical coordinate conversion failed!"
     )
-    assert np.allclose(
-        cartesian_to_spherical(test_vec_2d), np.vstack([expected, expected])
-    ), "Spherical coordinate conversion failed!"
 
 
-def test_cartesian_to_cylindrical() -> None:
+@pytest.mark.parametrize(
+    "input, expected",
+    [
+        (np.ones(3), np.array([np.sqrt(2), np.pi / 4.0, 1.0])),
+        (
+            np.ones([2, 3]), 
+            np.vstack([
+                np.array([np.sqrt(2), np.pi / 4.0, 1.0]), 
+                np.array([np.sqrt(2), np.pi / 4.0, 1.0])
+            ])
+        )
+    ]
+)
+def test_cartesian_to_cylindrical(input, expected) -> None:
     from snapanalysis.utils import cartesian_to_cylindrical
 
-    test_vec_1d = np.ones(3)
-    test_vec_2d = np.ones([2, 3])
-
-    expected = np.array([np.sqrt(2), np.pi / 4.0, 1.0])
-
-    assert np.allclose(cartesian_to_cylindrical(test_vec_1d), expected), (
+    assert np.allclose(cartesian_to_cylindrical(input), expected), (
         "Cylindrical coordinate conversion failed!"
     )
-    assert np.allclose(
-        cartesian_to_cylindrical(test_vec_2d), np.vstack([expected, expected])
-    ), "Cylindrical coordinate conversion failed!"
 
     return None
 

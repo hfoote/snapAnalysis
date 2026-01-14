@@ -174,3 +174,25 @@ def test_vector_cartesian_to_cylindrical(input_points, input_vectors, expected) 
     ), "Cylindrical vector transform failed!"
 
     return None
+
+
+def test_inertia_tensor_for_point_masses() -> None:
+    from snapanalysis.utils import inertia_tensor
+
+    input_pos = np.array([
+        [-1., 0., 0.],
+        [1., 0., 0.],
+        [0, -1., 2.]
+    ])
+    input_m = np.array([1., 2., 1.])
+
+    expected = np.array([
+        [5., 0., 0.],
+        [0., 7., 2.],
+        [0., 2., 4.]
+    ])
+
+    assert np.allclose(
+        inertia_tensor(input_m, input_pos), expected
+    ), "Inertia tensor calculation failed!"
+

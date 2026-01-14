@@ -34,3 +34,6 @@ Issues = "https://github.com/hfoote/snapAnalysis/issues"
 
 [tool.ruff.lint]
 select = ["E", "F"]
+
+[tool.uv.extra-build-dependencies]
+astropy = ["setuptools.dep_util"]

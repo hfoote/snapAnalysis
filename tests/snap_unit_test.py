@@ -77,6 +77,19 @@ def test_can_select_particles_by_id_range(dm_snap):
     )
 
 
+def test_can_select_particles_with_boolean_mask(dm_snap):
+    dm_snap.load_particle_data(["ParticleIDs", "Coordinates"])
+    mask = np.array([False] * dm_snap.N)
+    mask[1000:2000] = True
+    dm_snap.select_particles(mask)
+    assert len(dm_snap.data_fields["ParticleIDs"]) == 1000, (
+        "Mask selection failed!"
+    )
+    assert dm_snap.data_fields["Coordinates"].shape[0] == 1000, (
+        "Mask selection failed!"
+    )
+
+
 def test_centering(dm_snap):
     test_kwargs = {"vol_dec": 2.0}
     com = dm_snap.find_position_center(**test_kwargs)

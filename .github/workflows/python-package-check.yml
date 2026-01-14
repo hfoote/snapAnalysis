@@ -1,0 +1,37 @@
+name: CI Python Package Check
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    name: python
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version:
+          - "3.11"
+          - "3.12"
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install uv and set up python
+        uses: astral-sh/setup-uv@v7
+        with:
+          # Install a specific version of uv.
+          version: "0.9.10"
+          # Install python
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install snapAnalysis
+        run: uv sync --locked --all-extras --dev
+
+      - name: Run tests
+        run: uv run pytest
+
+      - name: Run linter
+        run: uv run ruff check

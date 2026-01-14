@@ -34,3 +34,4 @@ Issues = "https://github.com/hfoote/snapAnalysis/issues"
 
 [tool.ruff.lint]
 select = ["E", "F"]
+

@@ -137,3 +137,30 @@ def test_vector_cartesian_to_spherical(input_points, input_vectors, expected) ->
     ), "Spherical vector transform failed!"
 
     return None
+
+@pytest.mark.parametrize(
+    "input_points, input_vectors, expected", 
+    [
+        (
+            np.array([0.5, 0.5, 1.]), 
+            np.array([0., 0., 1.]), 
+            np.array([0., 0., 1.])
+        ),
+        (
+            np.array([[0.5, 0.5, 1.],
+                     [1., 0., 0.]]), 
+            np.array([[0., 0., 1.],
+                     [1., 0., 0.]]), 
+            np.array([[0., 0., 1.],
+                     [1., 0., 0.]])
+        )
+    ]
+)
+def test_vector_cartesian_to_cylindrical(input_points, input_vectors, expected) -> None:
+    from snapanalysis.utils import vector_cartesian_to_cylindrical
+
+    assert np.allclose(
+        vector_cartesian_to_cylindrical(input_points, input_vectors), expected
+    ), "Cylindrical vector transform failed!"
+
+    return None

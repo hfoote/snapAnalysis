@@ -147,6 +147,57 @@ def cartesian_to_spherical(coords: np.ndarray) -> np.ndarray:
     return np.array([r, theta, phi]).T
 
 
+def vector_cartesian_to_spherical(coords: np.ndarray, vecs: np.ndarray) -> np.ndarray:
+    '''vector_cartesian_to_spherical transforms a vector field defined in 
+    cartesian coordinates at coords with vectors vecs into spherical coordinates.
+
+    Parameters
+    ----------
+    coords : np.ndarray
+        Points at which the vector field is defined in Cartesian coordinates
+    vecs : np.ndarray
+        Cartesian vector values of the field
+
+    Returns
+    -------
+    np.ndarray
+        (r, theta (polar), phi (azimuth)) vectors
+    '''
+
+    # make inputs 2D if required
+    if coords.ndim == 1:
+        coords = coords[np.newaxis, :]
+        vecs = vecs[np.newaxis, :]
+        remove_axis = True
+    else:
+        remove_axis = False
+
+    coords_spherical = cartesian_to_spherical(coords)
+    theta = coords_spherical[:,1]
+    phi = coords_spherical[:,2]
+
+    vx = vecs[:,0]
+    vy = vecs[:,1]
+    vz = vecs[:,2]
+
+    v_r = (
+        np.sin(theta)*np.cos(phi)*vx
+        + np.sin(theta)*np.sin(phi)*vy
+        +  np.cos(theta)*vz
+    )
+    v_theta = (
+        np.cos(theta)*np.cos(phi)*vx 
+        + np.cos(theta)*np.sin(phi)*vy 
+        - np.sin(theta)*vz
+    )
+    v_phi = (-np.sin(phi)*vx + np.cos(phi)*vy)
+
+    if remove_axis:
+        return np.hstack([v_r, v_theta, v_phi])
+
+    return np.array([v_r, v_theta, v_phi]).T
+
+
 def cartesian_to_cylindrical(coords: np.ndarray) -> np.ndarray:
     """cartesian_to_cylindrical transforms a set of Cartesian coordinates
     to cylindrical coordinates, while preserving the input shape.

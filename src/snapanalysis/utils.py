@@ -332,3 +332,33 @@ def find_alignment_rotation(vec: np.ndarray) -> np.ndarray:
     _, theta, phi = cartesian_to_spherical(vec)
 
     return rotation_matrix(-phi, -theta, 0.0)
+
+
+def inertia_tensor(m: np.ndarray, pos: np.ndarray) -> np.ndarray:
+    '''inertia_tensor Calculates the inertia tensor for a collection
+    of point masses of mass m at positions pos
+
+    Parameters
+    ----------
+    m : np.ndarray
+        Nx1 array of masses
+    pos : np.ndarray
+        Nx3 array of positions
+
+    Returns
+    -------
+    np.ndarray
+        3x3 symmetric inertia tensor
+    '''
+
+    inertia_tensor = np.zeros([3, 3])
+
+    inertia_tensor[0,0] = np.sum(m * (pos[:,1]**2 + pos[:,2]**2))
+    inertia_tensor[1,1] = np.sum(m * (pos[:,0]**2 + pos[:,2]**2))
+    inertia_tensor[2,2] = np.sum(m * (pos[:,0]**2 + pos[:,1]**2))
+
+    inertia_tensor[0,1] = inertia_tensor[1,0] = - np.sum(m * pos[:,0] * pos[:,1])
+    inertia_tensor[0,2] = inertia_tensor[2,0] = - np.sum(m * pos[:,0] * pos[:,2])
+    inertia_tensor[1,2] = inertia_tensor[2,1] = - np.sum(m * pos[:,1] * pos[:,2])
+
+    return inertia_tensor

@@ -113,3 +113,9 @@ def test_density_points_returns_correct_central_density(dm_snap):
     emp_density = (dm_snap.data_fields['Masses'][0] * k / volume).value
 
     assert np.abs(central_density/emp_density - 1) < 1e-6
+
+
+def test_halo_axis_ratios_are_similar(dm_snap):
+    axis_ratios, principal_axes = dm_snap.principal_axes()
+
+    assert np.all(np.abs(axis_ratios/axis_ratios.max() - 1) < 0.2)

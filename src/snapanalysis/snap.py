@@ -600,6 +600,24 @@ class snapshot:
         mat = utils.find_alignment_rotation(J.value)
         self.apply_rotation(mat)
 
+    def principal_axes(self) -> tuple[np.ndarray, np.ndarray]:
+        '''principal_axes calculates the length and direction of the principal
+        axes of the particle distribution by diagonalizing the inertia tensor.
+
+        Returns
+        -------
+        np.ndarray
+            Principal axes lengths (eigenvalues of inertia tensor)
+        np.ndarray
+            Principal axes directions (eigenvectors of inertia tensor)
+        '''
+        self.load_particle_data(["Masses", "Coordinates"])
+        inertia_tensor = utils.inertia_tensor(
+            self.data_fields["Masses"].value, 
+            self.data_fields["Coordinates"].value
+        )
+        return np.linalg.eig(inertia_tensor)
+
     def density_projection(
         self,
         axis: int = 2,

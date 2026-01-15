@@ -351,14 +351,14 @@ def inertia_tensor(m: np.ndarray, pos: np.ndarray) -> np.ndarray:
         3x3 symmetric inertia tensor
     '''
 
-    I = np.zeros([3, 3])
+    inertia_tensor = np.zeros([3, 3])
 
-    I[0,0] = np.sum(m * (pos[:,1]**2 + pos[:,2]**2))
-    I[1,1] = np.sum(m * (pos[:,0]**2 + pos[:,2]**2))
-    I[2,2] = np.sum(m * (pos[:,0]**2 + pos[:,1]**2))
+    inertia_tensor[0,0] = np.sum(m * (pos[:,1]**2 + pos[:,2]**2))
+    inertia_tensor[1,1] = np.sum(m * (pos[:,0]**2 + pos[:,2]**2))
+    inertia_tensor[2,2] = np.sum(m * (pos[:,0]**2 + pos[:,1]**2))
 
-    I[0,1] = I[1,0] = - np.sum(m * pos[:,0] * pos[:,1])
-    I[0,2] = I[2,0] = - np.sum(m * pos[:,0] * pos[:,2])
-    I[1,2] = I[2,1] = - np.sum(m * pos[:,1] * pos[:,2])
+    inertia_tensor[0,1] = inertia_tensor[1,0] = - np.sum(m * pos[:,0] * pos[:,1])
+    inertia_tensor[0,2] = inertia_tensor[2,0] = - np.sum(m * pos[:,0] * pos[:,2])
+    inertia_tensor[1,2] = inertia_tensor[2,1] = - np.sum(m * pos[:,1] * pos[:,2])
 
-    return I
+    return inertia_tensor

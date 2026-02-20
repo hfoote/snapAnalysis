@@ -1,4 +1,4 @@
-# Contains the main snaphot class of snapAnalysis, which stores snapshots in a 
+# Contains the main snaphot class of snapAnalysis, which stores snapshots in a
 # flexible format.
 
 import numpy as np
@@ -15,8 +15,8 @@ from scipy.spatial import KDTree
 
 
 class snapshot:
-    """The main class of snapAnalysis, which reads and stores a single particle type 
-    from a single gagdet/arepo format hdf5 snapshot. Methods provide common analysis 
+    """The main class of snapAnalysis, which reads and stores a single particle type
+    from a single gagdet/arepo format hdf5 snapshot. Methods provide common analysis
     routines such as computing density fields, centering, rotations, etc.
     """
 
@@ -167,7 +167,7 @@ class snapshot:
         return masstable
 
     def check_if_field_read(self, field: str) -> bool:
-        """check_if_field_read checks to see whether a data field has 
+        """check_if_field_read checks to see whether a data field has
         already been stored
 
         Parameters
@@ -187,8 +187,8 @@ class snapshot:
         return True
 
     def arrange_fields(self, indices: np.ndarray) -> None:
-        """arrange_fields re-arranges all existing data fields according 
-        to the input indices. Useful for sorting the simulation by particle ID, 
+        """arrange_fields re-arranges all existing data fields according
+        to the input indices. Useful for sorting the simulation by particle ID,
         for instance.
 
         Parameters
@@ -217,9 +217,7 @@ class snapshot:
 
         if isinstance(selection, np.ndarray):
             if len(selection) != len(IDs):
-                raise ValueError(
-                    "Mask length must equal the number of particles!"
-                )
+                raise ValueError("Mask length must equal the number of particles!")
         elif not isinstance(selection, tuple):
             raise TypeError(
                 "Selection must be a tuple of min and max IDs or a boolean array mask"
@@ -291,7 +289,7 @@ class snapshot:
                 )
 
     def get_FDM_velocities(self) -> None:
-        """Calculates the FDM velocity field based on the wavefunction outputs, 
+        """Calculates the FDM velocity field based on the wavefunction outputs,
         via the phase gradient method:
         v = hbar/m gradient(phase). Based on code from Philip Mocz
         """
@@ -361,7 +359,7 @@ class snapshot:
     def apply_center(
         self, pos_center: np.ndarray, vel_center: np.ndarray | None = None
     ) -> None:
-        """center_particles centers particles on a specified center 
+        """center_particles centers particles on a specified center
         in position and velocity
 
         Parameters
@@ -394,19 +392,19 @@ class snapshot:
         N_min: int = 1000,
         verbose: bool = False,
     ) -> np.ndarray:
-        """find_position_center finds the center of mass of the snapshot via 
+        """find_position_center finds the center of mass of the snapshot via
         the shrinking-spheres method.
 
         Parameters
         ----------
         guess : None or np.ndarray, optional
-                Initial [x,y,z] guess for COM position. If None, uses the com of 
+                Initial [x,y,z] guess for COM position. If None, uses the com of
                 every active particle in the box.
         r_start : None or float, optional
-                Initial sphere radius, default (none) uses furthest particle from 
+                Initial sphere radius, default (none) uses furthest particle from
                 box origin
         vol_dec : float, optional
-                Factor by which the sphere radius is reduced during an iteration, 
+                Factor by which the sphere radius is reduced during an iteration,
                 by default 3.
         delta : float, optional
                 Tolerance, stop when change in COM is less than delta, by default 0.01
@@ -492,7 +490,7 @@ class snapshot:
         pos_center : np.ndarray
                 [x, y, z] center of mass position
         r_max : u.Quantity, optional
-                max distance from COM to use particles for the calculation, 
+                max distance from COM to use particles for the calculation,
                 by default 15.0*u.kpc
 
         Returns
@@ -516,7 +514,7 @@ class snapshot:
         self, com_kwargs: dict = {}, vel_kwargs: dict = {}
     ) -> None:
         """find_and_apply_center Calculates the positions and velocity center
-        of the snapshot and centers the particle data on the COM location 
+        of the snapshot and centers the particle data on the COM location
         in phase-space.
 
         Parameters
@@ -558,13 +556,13 @@ class snapshot:
     def find_angular_momentum_direction(
         self, r_max: u.Quantity | None = None
     ) -> np.ndarray:
-        """find_angular_momentum_direction Returns the normalized average 
+        """find_angular_momentum_direction Returns the normalized average
         specific angular momentum vector of the loaded particles.
 
         Parameters
         ----------
         r_max : u.Quantity | None, optional
-                max. radius within which to consider particles. None uses entire box. 
+                max. radius within which to consider particles. None uses entire box.
                 By default None
 
         Returns
@@ -601,7 +599,7 @@ class snapshot:
         self.apply_rotation(mat)
 
     def principal_axes(self) -> tuple[np.ndarray, np.ndarray]:
-        '''principal_axes calculates the length and direction of the principal
+        """principal_axes calculates the length and direction of the principal
         axes of the particle distribution by diagonalizing the inertia tensor.
 
         Returns
@@ -610,11 +608,10 @@ class snapshot:
             Principal axes lengths (eigenvalues of inertia tensor)
         np.ndarray
             Principal axes directions (eigenvectors of inertia tensor)
-        '''
+        """
         self.load_particle_data(["Masses", "Coordinates"])
         inertia_tensor = utils.inertia_tensor(
-            self.data_fields["Masses"].value, 
-            self.data_fields["Coordinates"].value
+            self.data_fields["Masses"].value, self.data_fields["Coordinates"].value
         )
         return np.linalg.eig(inertia_tensor)
 
@@ -628,7 +625,7 @@ class snapshot:
         slice_width: None | float = None,
         normalization: bool = "surface",
     ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-        """density_projection generates a density histogram projected along 
+        """density_projection generates a density histogram projected along
         the specified axis.
 
         Parameters
@@ -779,8 +776,8 @@ class snapshot:
         """density_points computes the local density field at a specified collection of
         points using the k_max-th nearest particles to the point.
 
-        In practice, the density at a local point is calculated as the mass of 
-        k_max particles, divided by the volume of a sphere with radius equal to the 
+        In practice, the density at a local point is calculated as the mass of
+        k_max particles, divided by the volume of a sphere with radius equal to the
         distance to the k_max-th nearest-neighbor.
 
         Parameters
@@ -788,13 +785,13 @@ class snapshot:
         points : np.ndarray
                 Nx3 array of points at which to compute the density
         k_max : int, optional
-                maximum nearest neighbor to use in density calculation, i.e. 
+                maximum nearest neighbor to use in density calculation, i.e.
                 the defualt of 1000 uses the 1000 nearest-neighbors.
 
         Returns
         -------
         np.ndarray
-                Array of length N containing the value of the density field at the 
+                Array of length N containing the value of the density field at the
                 input points
         """
 
@@ -824,7 +821,7 @@ class snapshot:
         plot: bool = True,
         plot_name: bool | str = False,
     ) -> tuple[np.ndarray, np.ndarray]:
-        """anisotropy_profile calculates the velocity anisotropy profile of a halo, 
+        """anisotropy_profile calculates the velocity anisotropy profile of a halo,
         given by Eqn 4.61 of Binney & Tremaine
 
         Parameters
@@ -836,7 +833,7 @@ class snapshot:
         nbins : int, optional
                 number of radial bins, by default 100
         log_bins : bool, optional
-                If True, make logarithmically spaced bins instead of linearly 
+                If True, make logarithmically spaced bins instead of linearly
                 spaced bins, by default False
         plot : bool, optional
                 show a plot of the computed profile, by default True
@@ -916,7 +913,7 @@ class snapshot:
         plot_name: bool | str = False,
         slice_width: None | float = None,
     ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-        """potential_projection bins the particles in the specified plane and finds 
+        """potential_projection bins the particles in the specified plane and finds
         the mean value of the potential within each bin.
 
         Parameters
@@ -924,15 +921,15 @@ class snapshot:
         axis : int, optional
                 Axis to project along (x=0, y=1, z=2), by default 2
         bins : int | list, optional
-                bin specification passed to scipy's binned_statistic_2d, 
+                bin specification passed to scipy's binned_statistic_2d,
                 by default [200,200]
         plot : bool, optional
                 create a plot of the potential, by default True
         plot_name : bool | str, optional
                 if not False, saves the plot under this file name, by default False
         slice_width : None | float, optional
-                Leave as None to use the whole box. Otherwise, provide a distance 
-                in the length units of the snapshot from the midplane along the 
+                Leave as None to use the whole box. Otherwise, provide a distance
+                in the length units of the snapshot from the midplane along the
                 specified axis to include, by default None
 
         Returns

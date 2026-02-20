@@ -1,8 +1,12 @@
 # Routines for analyzing an entire simulation at once
+# TODO: wrapper routine for multiprocessing
+# TODO: function for storing rotation matrices
 
 import numpy as np
 from .snap import snapshot
 from .utils import get_snaps
+from .orbit import Orbit
+
 
 def orbit_com(
     sim_dir: str,
@@ -25,10 +29,10 @@ def orbit_com(
     out_file : None or str, optional
             if not None, saves the orbit file under this name
     select_IDs : None or tuple, optional
-            min. and max. particle IDs for selection if desired, otherwise uses all 
+            min. and max. particle IDs for selection if desired, otherwise uses all
             particles of the specified type.
     use_guess : None or str ('previous')
-            specifies where the intial sphere is centered. None uses the com of 
+            specifies where the intial sphere is centered. None uses the com of
             every particle, 'previous' uses the previous snapshot's com.
     com_kwargs : dict, optional
             kwargs for snap.find_position_center, by default {}
@@ -91,3 +95,57 @@ def orbit_com(
         )
 
     return np.round(orbit, 6)
+
+
+def get_particle_orbit(sim_dir: str, part_type: int, ids: list) -> Orbit:
+    """
+    Stores the orbit of a particle or particles throughout a simulation.
+    TODO: support loading precomputed centers and rotations
+
+    Parameters
+    ----------
+    sim_dir : str
+        Directory containing simulation snapshots
+    part_type : int
+        Type of particle
+    ids : list
+        List of IDs of desired particles
+
+    Returns
+    -------
+    Orbit : snapanalysis.orbit.Orbit
+        Orbit object containing the orbits of the specified particles
+    """
+
+    snap_names = get_snaps(sim_dir)
+    N_snaps = len(snap_names)
+
+    times = np.zeros(N_snaps)
+    pos = np.zeros([N_snaps, 3, len(ids)])
+    vel = np.zeros([N_snaps, 3, len(ids)])
+
+    for i, snap_name in enumerate(snap_names):
+        s = snapshot(snap_name, part_type)
+        s.load_particle_data(["ParticleIDs", "Coordinates", "Velocities"])
+        s.find_and_apply_center()
+        s.align_angular_momentum()
+
+        mask = np.isin(s.data_fields["ParticleIDs"], ids)
+        s.select_particles(mask)
+        s.arrange_fields(np.argsort(s.data_fields["ParticleIDs"]))
+
+        times[i] = s.time.value
+        pos[i] = s.data_fields["Coordinates"].T.value
+        vel[i] = s.data_fields["Velocities"].T.value
+
+        if i == 0:
+            id_map = dict(
+                zip(
+                    s.data_fields["ParticleIDs"].value.astype(int).astype(str),
+                    range(len(ids)),
+                )
+            )
+
+    return Orbit(
+        times * s.time.unit, pos * s.length_unit, vel * s.vel_unit, id_map, sim_dir
+    )

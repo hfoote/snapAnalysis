@@ -37,9 +37,9 @@ def test_can_read_metadata(snap, expected, request):
 
 def test_unit_detection(dm_snap):
     print(dm_snap)
-     # define tolerance - 1 part in 1000 should account for rounding differences 
-     # between unit specification in astropy vs gadget
-    unit_tol = 1e-3 
+    # define tolerance - 1 part in 1000 should account for rounding differences
+    # between unit specification in astropy vs gadget
+    unit_tol = 1e-3
     assert (dm_snap.field_units["Coordinates"] - 1.0 * u.kpc) / (
         1.0 * u.kpc
     ) < unit_tol, "Length unit detection failed!"
@@ -82,12 +82,8 @@ def test_can_select_particles_with_boolean_mask(dm_snap):
     mask = np.array([False] * dm_snap.N)
     mask[1000:2000] = True
     dm_snap.select_particles(mask)
-    assert len(dm_snap.data_fields["ParticleIDs"]) == 1000, (
-        "Mask selection failed!"
-    )
-    assert dm_snap.data_fields["Coordinates"].shape[0] == 1000, (
-        "Mask selection failed!"
-    )
+    assert len(dm_snap.data_fields["ParticleIDs"]) == 1000, "Mask selection failed!"
+    assert dm_snap.data_fields["Coordinates"].shape[0] == 1000, "Mask selection failed!"
 
 
 def test_centering(dm_snap):
@@ -104,18 +100,16 @@ def test_centering(dm_snap):
 
 def test_density_points_returns_correct_central_density(dm_snap):
     k = 100
-    central_density = dm_snap.density_points(
-        np.zeros(3), k_max=k
-    )[0].value
+    central_density = dm_snap.density_points(np.zeros(3), k_max=k)[0].value
 
-    particle_radii = np.sqrt(np.sum(dm_snap.data_fields['Coordinates']**2, axis=1))
-    volume = 4.0 * np.pi / 3.0 * (np.partition(particle_radii, k-1)[k-1])**3
-    emp_density = (dm_snap.data_fields['Masses'][0] * k / volume).value
+    particle_radii = np.sqrt(np.sum(dm_snap.data_fields["Coordinates"] ** 2, axis=1))
+    volume = 4.0 * np.pi / 3.0 * (np.partition(particle_radii, k - 1)[k - 1]) ** 3
+    emp_density = (dm_snap.data_fields["Masses"][0] * k / volume).value
 
-    assert np.abs(central_density/emp_density - 1) < 1e-6
+    assert np.abs(central_density / emp_density - 1) < 1e-6
 
 
 def test_halo_axis_ratios_are_similar(dm_snap):
     axis_ratios, principal_axes = dm_snap.principal_axes()
 
-    assert np.all(np.abs(axis_ratios/axis_ratios.max() - 1) < 0.2)
+    assert np.all(np.abs(axis_ratios / axis_ratios.max() - 1) < 0.2)

@@ -148,7 +148,7 @@ def cartesian_to_spherical(coords: np.ndarray) -> np.ndarray:
 
 
 def vector_cartesian_to_spherical(coords: np.ndarray, vecs: np.ndarray) -> np.ndarray:
-    '''vector_cartesian_to_spherical transforms a vector field defined in 
+    """vector_cartesian_to_spherical transforms a vector field defined in
     cartesian coordinates at coords with vectors vecs into spherical coordinates.
 
     Parameters
@@ -162,7 +162,7 @@ def vector_cartesian_to_spherical(coords: np.ndarray, vecs: np.ndarray) -> np.nd
     -------
     np.ndarray
         (r, theta (polar), phi (azimuth)) vectors
-    '''
+    """
 
     # make inputs 2D if required
     if coords.ndim == 1:
@@ -173,24 +173,24 @@ def vector_cartesian_to_spherical(coords: np.ndarray, vecs: np.ndarray) -> np.nd
         remove_axis = False
 
     coords_spherical = cartesian_to_spherical(coords)
-    theta = coords_spherical[:,1]
-    phi = coords_spherical[:,2]
+    theta = coords_spherical[:, 1]
+    phi = coords_spherical[:, 2]
 
-    vx = vecs[:,0]
-    vy = vecs[:,1]
-    vz = vecs[:,2]
+    vx = vecs[:, 0]
+    vy = vecs[:, 1]
+    vz = vecs[:, 2]
 
     v_r = (
-        np.sin(theta)*np.cos(phi)*vx
-        + np.sin(theta)*np.sin(phi)*vy
-        +  np.cos(theta)*vz
+        np.sin(theta) * np.cos(phi) * vx
+        + np.sin(theta) * np.sin(phi) * vy
+        + np.cos(theta) * vz
     )
     v_theta = (
-        np.cos(theta)*np.cos(phi)*vx 
-        + np.cos(theta)*np.sin(phi)*vy 
-        - np.sin(theta)*vz
+        np.cos(theta) * np.cos(phi) * vx
+        + np.cos(theta) * np.sin(phi) * vy
+        - np.sin(theta) * vz
     )
-    v_phi = (-np.sin(phi)*vx + np.cos(phi)*vy)
+    v_phi = -np.sin(phi) * vx + np.cos(phi) * vy
 
     if remove_axis:
         return np.hstack([v_r, v_theta, v_phi])
@@ -230,7 +230,7 @@ def cartesian_to_cylindrical(coords: np.ndarray) -> np.ndarray:
 
 
 def vector_cartesian_to_cylindrical(coords: np.ndarray, vecs: np.ndarray) -> np.ndarray:
-    '''vector_cartesian_to_cylindrical transforms a vector field defined in 
+    """vector_cartesian_to_cylindrical transforms a vector field defined in
     cartesian coordinates at coords with vectors vecs into cylindrical coordinates.
 
     Parameters
@@ -244,7 +244,7 @@ def vector_cartesian_to_cylindrical(coords: np.ndarray, vecs: np.ndarray) -> np.
     -------
     np.ndarray
         (rho, phi (azimuth), z) vectors
-    '''
+    """
 
     # make inputs 2D if required
     if coords.ndim == 1:
@@ -255,14 +255,14 @@ def vector_cartesian_to_cylindrical(coords: np.ndarray, vecs: np.ndarray) -> np.
         remove_axis = False
 
     coords_cylindrical = cartesian_to_cylindrical(coords)
-    phi = coords_cylindrical[:,1]
+    phi = coords_cylindrical[:, 1]
 
-    vx = vecs[:,0]
-    vy = vecs[:,1]
-    vz = vecs[:,2]
+    vx = vecs[:, 0]
+    vy = vecs[:, 1]
+    vz = vecs[:, 2]
 
-    v_rho = (np.cos(phi)*vx + np.sin(phi)*vy)
-    v_phi = (-np.sin(phi)*vx + np.cos(phi)*vy)
+    v_rho = np.cos(phi) * vx + np.sin(phi) * vy
+    v_phi = -np.sin(phi) * vx + np.cos(phi) * vy
 
     if remove_axis:
         return np.hstack([v_rho, v_phi, vz])
@@ -272,7 +272,7 @@ def vector_cartesian_to_cylindrical(coords: np.ndarray, vecs: np.ndarray) -> np.
 
 def rotation_matrix(alpha: float, beta: float, gamma: float) -> np.ndarray:
     """rotation_matrix returns the rotation matrix for a general intrinsic rotation
-    of yaw, pitch, roll (Tait-Bryan angles about z,y,x) alpha, beta, gamma, 
+    of yaw, pitch, roll (Tait-Bryan angles about z,y,x) alpha, beta, gamma,
     respectively.
 
     Parameters
@@ -335,7 +335,7 @@ def find_alignment_rotation(vec: np.ndarray) -> np.ndarray:
 
 
 def inertia_tensor(m: np.ndarray, pos: np.ndarray) -> np.ndarray:
-    '''inertia_tensor Calculates the inertia tensor for a collection
+    """inertia_tensor Calculates the inertia tensor for a collection
     of point masses of mass m at positions pos
 
     Parameters
@@ -349,16 +349,16 @@ def inertia_tensor(m: np.ndarray, pos: np.ndarray) -> np.ndarray:
     -------
     np.ndarray
         3x3 symmetric inertia tensor
-    '''
+    """
 
     inertia_tensor = np.zeros([3, 3])
 
-    inertia_tensor[0,0] = np.sum(m * (pos[:,1]**2 + pos[:,2]**2))
-    inertia_tensor[1,1] = np.sum(m * (pos[:,0]**2 + pos[:,2]**2))
-    inertia_tensor[2,2] = np.sum(m * (pos[:,0]**2 + pos[:,1]**2))
+    inertia_tensor[0, 0] = np.sum(m * (pos[:, 1] ** 2 + pos[:, 2] ** 2))
+    inertia_tensor[1, 1] = np.sum(m * (pos[:, 0] ** 2 + pos[:, 2] ** 2))
+    inertia_tensor[2, 2] = np.sum(m * (pos[:, 0] ** 2 + pos[:, 1] ** 2))
 
-    inertia_tensor[0,1] = inertia_tensor[1,0] = - np.sum(m * pos[:,0] * pos[:,1])
-    inertia_tensor[0,2] = inertia_tensor[2,0] = - np.sum(m * pos[:,0] * pos[:,2])
-    inertia_tensor[1,2] = inertia_tensor[2,1] = - np.sum(m * pos[:,1] * pos[:,2])
+    inertia_tensor[0, 1] = inertia_tensor[1, 0] = -np.sum(m * pos[:, 0] * pos[:, 1])
+    inertia_tensor[0, 2] = inertia_tensor[2, 0] = -np.sum(m * pos[:, 0] * pos[:, 2])
+    inertia_tensor[1, 2] = inertia_tensor[2, 1] = -np.sum(m * pos[:, 1] * pos[:, 2])
 
     return inertia_tensor

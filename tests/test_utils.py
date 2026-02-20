@@ -2,6 +2,7 @@
 import numpy as np
 import pytest
 
+
 def test_com_define() -> None:
     from snapanalysis.utils import com_define
 
@@ -69,13 +70,15 @@ def test_get_snaps() -> None:
     [
         (np.ones(3), np.array([np.sqrt(3), np.arccos(1.0 / np.sqrt(3)), np.pi / 4.0])),
         (
-            np.ones([2, 3]), 
-            np.vstack([
-                np.array([np.sqrt(3), np.arccos(1.0 / np.sqrt(3)), np.pi / 4.0]), 
-                np.array([np.sqrt(3), np.arccos(1.0 / np.sqrt(3)), np.pi / 4.0])
-            ])
-        )
-    ]
+            np.ones([2, 3]),
+            np.vstack(
+                [
+                    np.array([np.sqrt(3), np.arccos(1.0 / np.sqrt(3)), np.pi / 4.0]),
+                    np.array([np.sqrt(3), np.arccos(1.0 / np.sqrt(3)), np.pi / 4.0]),
+                ]
+            ),
+        ),
+    ],
 )
 def test_cartesian_to_spherical(input, expected) -> None:
     from snapanalysis.utils import cartesian_to_spherical
@@ -90,13 +93,15 @@ def test_cartesian_to_spherical(input, expected) -> None:
     [
         (np.ones(3), np.array([np.sqrt(2), np.pi / 4.0, 1.0])),
         (
-            np.ones([2, 3]), 
-            np.vstack([
-                np.array([np.sqrt(2), np.pi / 4.0, 1.0]), 
-                np.array([np.sqrt(2), np.pi / 4.0, 1.0])
-            ])
-        )
-    ]
+            np.ones([2, 3]),
+            np.vstack(
+                [
+                    np.array([np.sqrt(2), np.pi / 4.0, 1.0]),
+                    np.array([np.sqrt(2), np.pi / 4.0, 1.0]),
+                ]
+            ),
+        ),
+    ],
 )
 def test_cartesian_to_cylindrical(input, expected) -> None:
     from snapanalysis.utils import cartesian_to_cylindrical
@@ -122,22 +127,19 @@ def test_find_alignment_rotation() -> None:
 
 
 @pytest.mark.parametrize(
-    "input_points, input_vectors, expected", 
+    "input_points, input_vectors, expected",
     [
         (
-            np.array([0.5, 0.5, 1./np.sqrt(2)]), 
-            np.array([0., 0., 1.]), 
-            np.array([1./np.sqrt(2), -1./np.sqrt(2), 0])
+            np.array([0.5, 0.5, 1.0 / np.sqrt(2)]),
+            np.array([0.0, 0.0, 1.0]),
+            np.array([1.0 / np.sqrt(2), -1.0 / np.sqrt(2), 0]),
         ),
         (
-            np.array([[0.5, 0.5, 1./np.sqrt(2)],
-                     [1., 0., 0.]]), 
-            np.array([[0., 0., 1.],
-                     [0., 0., 1.]]), 
-            np.array([[1./np.sqrt(2), -1./np.sqrt(2), 0],
-                     [0., -1., 0.]])
-        )
-    ]
+            np.array([[0.5, 0.5, 1.0 / np.sqrt(2)], [1.0, 0.0, 0.0]]),
+            np.array([[0.0, 0.0, 1.0], [0.0, 0.0, 1.0]]),
+            np.array([[1.0 / np.sqrt(2), -1.0 / np.sqrt(2), 0], [0.0, -1.0, 0.0]]),
+        ),
+    ],
 )
 def test_vector_cartesian_to_spherical(input_points, input_vectors, expected) -> None:
     from snapanalysis.utils import vector_cartesian_to_spherical
@@ -148,23 +150,21 @@ def test_vector_cartesian_to_spherical(input_points, input_vectors, expected) ->
 
     return None
 
+
 @pytest.mark.parametrize(
-    "input_points, input_vectors, expected", 
+    "input_points, input_vectors, expected",
     [
         (
-            np.array([0.5, 0.5, 1.]), 
-            np.array([0., 0., 1.]), 
-            np.array([0., 0., 1.])
+            np.array([0.5, 0.5, 1.0]),
+            np.array([0.0, 0.0, 1.0]),
+            np.array([0.0, 0.0, 1.0]),
         ),
         (
-            np.array([[0.5, 0.5, 1.],
-                     [1., 0., 0.]]), 
-            np.array([[0., 0., 1.],
-                     [1., 0., 0.]]), 
-            np.array([[0., 0., 1.],
-                     [1., 0., 0.]])
-        )
-    ]
+            np.array([[0.5, 0.5, 1.0], [1.0, 0.0, 0.0]]),
+            np.array([[0.0, 0.0, 1.0], [1.0, 0.0, 0.0]]),
+            np.array([[0.0, 0.0, 1.0], [1.0, 0.0, 0.0]]),
+        ),
+    ],
 )
 def test_vector_cartesian_to_cylindrical(input_points, input_vectors, expected) -> None:
     from snapanalysis.utils import vector_cartesian_to_cylindrical
@@ -179,20 +179,11 @@ def test_vector_cartesian_to_cylindrical(input_points, input_vectors, expected) 
 def test_inertia_tensor_for_point_masses() -> None:
     from snapanalysis.utils import inertia_tensor
 
-    input_pos = np.array([
-        [-1., 0., 0.],
-        [1., 0., 0.],
-        [0, -1., 2.]
-    ])
-    input_m = np.array([1., 2., 1.])
+    input_pos = np.array([[-1.0, 0.0, 0.0], [1.0, 0.0, 0.0], [0, -1.0, 2.0]])
+    input_m = np.array([1.0, 2.0, 1.0])
 
-    expected = np.array([
-        [5., 0., 0.],
-        [0., 7., 2.],
-        [0., 2., 4.]
-    ])
+    expected = np.array([[5.0, 0.0, 0.0], [0.0, 7.0, 2.0], [0.0, 2.0, 4.0]])
 
-    assert np.allclose(
-        inertia_tensor(input_m, input_pos), expected
-    ), "Inertia tensor calculation failed!"
-
+    assert np.allclose(inertia_tensor(input_m, input_pos), expected), (
+        "Inertia tensor calculation failed!"
+    )

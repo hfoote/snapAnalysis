@@ -98,6 +98,27 @@ def test_centering(dm_snap):
     ), "Velocity center calculation failed!"
 
 
+def test_angular_momentum_alignment_is_consistent_with_manual_rotation(dm_snap):
+    from snapanalysis.utils import find_alignment_rotation
+
+    dm_snap.align_angular_momentum()
+    assert np.allclose(
+        dm_snap.find_angular_momentum_direction(), np.array([0.0, 0.0, 1.0])
+    )
+
+    snap_2 = snapshot("tests/example_snaps/snap_000.hdf5", 1)
+    J_vec = snap_2.find_angular_momentum_direction()
+    mat = find_alignment_rotation(J_vec.value)
+    snap_2.apply_rotation(mat)
+
+    assert np.allclose(
+        snap_2.find_angular_momentum_direction(), np.array([0.0, 0.0, 1.0])
+    )
+    assert np.allclose(
+        dm_snap.data_fields["Coordinates"], snap_2.data_fields["Coordinates"]
+    )
+
+
 def test_density_points_returns_correct_central_density(dm_snap):
     k = 100
     central_density = dm_snap.density_points(np.zeros(3), k_max=k)[0].value

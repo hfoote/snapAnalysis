@@ -166,6 +166,7 @@ def get_particle_orbit(
     ids: list,
     use_centers: None | str = None,
     use_rotations: None | str = None,
+    verbose: bool = False,
 ) -> Orbit:
     """
     Stores the orbit of a particle or particles throughout a simulation.
@@ -185,6 +186,8 @@ def get_particle_orbit(
     use_rotations : None or str, optional
         Uses rotation matrices stored in the specified numpy binary file. If None,
         snapshots will be auto-aligned
+    verbose : bool, optional
+        print progress, by default False
 
     Returns
     -------
@@ -205,6 +208,9 @@ def get_particle_orbit(
     vel = np.zeros([N_snaps, 3, len(ids)])
 
     for i, snap_name in enumerate(snap_names):
+        if verbose:
+            print(f"Extracting orbits from snapshot {i} of {N_snaps - 1}")
+
         s = snapshot(snap_name, part_type)
         s.load_particle_data(["ParticleIDs", "Coordinates", "Velocities"])
         if use_centers is not None:

@@ -103,7 +103,7 @@ def test_simulation_workflow(temp_dir):
     assert np.allclose(particle_orbits.vel.value, PARTICLE_ORBIT_VEL)
 
 
-def test_particle_orbit_extraction_returns_correct_data():
+def test_particle_orbit_extraction_returns_correct_data_for_multiple_particles():
     # A user wants to extract the orbits of the first two particle IDs
     orbits = get_particle_orbit("tests/example_snaps/", 1, [1, 2])
 
@@ -119,3 +119,19 @@ def test_particle_orbit_extraction_returns_correct_data():
     # and the correct data
     assert np.allclose(orbits.pos.value, PARTICLE_ORBIT_POS)
     assert np.allclose(orbits.vel.value, PARTICLE_ORBIT_VEL)
+
+def test_particle_orbit_extraction_returns_correct_data_for_single_particle():
+    # A user wants to extract the orbits of the first particle ID
+    orbits = get_particle_orbit("tests/example_snaps/", 1, [1])
+
+    # they verify the orbits come from the correct simulation
+    assert orbits.source_dir == "tests/example_snaps/"
+
+    # contain the correct particles
+    assert orbits.ids["1"] == 0
+
+    assert np.allclose(orbits.t.value, np.array([0.0, 0.19718176]))
+
+    # and the correct data
+    assert np.allclose(orbits.pos.value, PARTICLE_ORBIT_POS[:,:,:0])
+    assert np.allclose(orbits.vel.value, PARTICLE_ORBIT_VEL[:,:,:0])

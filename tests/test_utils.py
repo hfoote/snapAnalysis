@@ -1,6 +1,7 @@
 # unit tests for the utility functions of snapAnalysis
 import numpy as np
 import pytest
+from tests.snap_unit_test import CDM_TEST_SNAP_PATH
 
 
 def test_com_define() -> None:
@@ -55,10 +56,10 @@ def test_get_snaps() -> None:
     from snapanalysis.utils import get_snaps
 
     expected = np.array(
-        ["tests/example_snaps/snap_000.hdf5", "tests/example_snaps/snap_001.hdf5"]
+        [CDM_TEST_SNAP_PATH + "snap_000.hdf5", CDM_TEST_SNAP_PATH + "snap_001.hdf5"]
     )
 
-    assert np.array_equal(get_snaps("tests/example_snaps/"), expected), (
+    assert np.array_equal(get_snaps(CDM_TEST_SNAP_PATH), expected), (
         "Snapshot collection failed!"
     )
 

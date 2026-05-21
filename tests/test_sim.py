@@ -2,6 +2,7 @@
 import numpy as np
 from snapanalysis.sim import orbit_com, get_particle_orbit, get_alignment_rotations
 import pytest
+from tests.snap_unit_test import CDM_TEST_SNAP_PATH
 
 # expected particle orbit data
 PARTICLE_ORBIT_POS = np.array(
@@ -71,14 +72,14 @@ def test_simulation_workflow(temp_dir):
     # file called test_centers.txt
     com_file = temp_dir / "test_centers.txt"
     rot_file = temp_dir / "test_rotations.npy"
-    orbit = orbit_com("tests/example_snaps/", 1, out_file=com_file)
+    orbit = orbit_com(CDM_TEST_SNAP_PATH, 1, out_file=com_file)
 
     assert np.allclose(orbit, COM_ORBIT), "Orbit determination failed!"
 
     # Next, they compute the rotation matrices required to align the
     # angular momentum of the halo with the z-axis
     rotations = get_alignment_rotations(
-        "tests/example_snaps/", 1, out_file=rot_file, use_centers=com_file
+        CDM_TEST_SNAP_PATH, 1, out_file=rot_file, use_centers=com_file
     )
 
     assert np.allclose(rotations, ALIGN_ROT)
@@ -96,7 +97,7 @@ def test_simulation_workflow(temp_dir):
     # Next, they want to use those precomputed centers to find the orbits of
     # the first two particle IDs
     particle_orbits = get_particle_orbit(
-        "tests/example_snaps/", 1, [1, 2], use_centers=com_file, use_rotations=rot_file
+        CDM_TEST_SNAP_PATH, 1, [1, 2], use_centers=com_file, use_rotations=rot_file
     )
 
     assert np.allclose(particle_orbits.pos.value, PARTICLE_ORBIT_POS)
@@ -105,10 +106,10 @@ def test_simulation_workflow(temp_dir):
 
 def test_particle_orbit_extraction_returns_correct_data_for_multiple_particles():
     # A user wants to extract the orbits of the first two particle IDs
-    orbits = get_particle_orbit("tests/example_snaps/", 1, [1, 2])
+    orbits = get_particle_orbit(CDM_TEST_SNAP_PATH, 1, [1, 2])
 
     # they verify the orbits come from the correct simulation
-    assert orbits.source_dir == "tests/example_snaps/"
+    assert orbits.source_dir == CDM_TEST_SNAP_PATH
 
     # contain the correct particles
     assert orbits.ids["1"] == 0
@@ -120,12 +121,13 @@ def test_particle_orbit_extraction_returns_correct_data_for_multiple_particles()
     assert np.allclose(orbits.pos.value, PARTICLE_ORBIT_POS)
     assert np.allclose(orbits.vel.value, PARTICLE_ORBIT_VEL)
 
+
 def test_particle_orbit_extraction_returns_correct_data_for_single_particle():
     # A user wants to extract the orbits of the first particle ID
-    orbits = get_particle_orbit("tests/example_snaps/", 1, [1])
+    orbits = get_particle_orbit(CDM_TEST_SNAP_PATH, 1, [1])
 
     # they verify the orbits come from the correct simulation
-    assert orbits.source_dir == "tests/example_snaps/"
+    assert orbits.source_dir == CDM_TEST_SNAP_PATH
 
     # contain the correct particles
     assert orbits.ids["1"] == 0
@@ -133,5 +135,5 @@ def test_particle_orbit_extraction_returns_correct_data_for_single_particle():
     assert np.allclose(orbits.t.value, np.array([0.0, 0.19718176]))
 
     # and the correct data
-    assert np.allclose(orbits.pos.value, PARTICLE_ORBIT_POS[:,:,:0])
-    assert np.allclose(orbits.vel.value, PARTICLE_ORBIT_VEL[:,:,:0])
+    assert np.allclose(orbits.pos.value, PARTICLE_ORBIT_POS[:, :, :0])
+    assert np.allclose(orbits.vel.value, PARTICLE_ORBIT_VEL[:, :, :0])

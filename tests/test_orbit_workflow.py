@@ -2,6 +2,7 @@
 import numpy as np
 from astropy import units as u
 import pytest
+from tests.snap_unit_test import CDM_TEST_SNAP_PATH
 
 
 @pytest.fixture
@@ -14,7 +15,7 @@ def test_orbit_workflow(temp_dir):
     from snapanalysis.sim import get_particle_orbit
 
     # a user wants to extract the orbit of two particles from an entire simulation
-    sim_dir = "tests/example_snaps/"
+    sim_dir = CDM_TEST_SNAP_PATH
     orb = get_particle_orbit(sim_dir, 1, ids=[1, 2])
 
     # The orbit object stores the simulation directory that it refers to

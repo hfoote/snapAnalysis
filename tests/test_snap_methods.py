@@ -1,11 +1,12 @@
 # E2E tests for the functionality of snap objects
-# requires the example snapshots in tests/example_snaps/
+# requires the example snapshots in CDM_TEST_SNAP_PATH
 
 from snapanalysis.snap import snapshot
 import astropy.units as u
 import numpy as np
 import os
 import pytest
+from tests.snap_unit_test import CDM_TEST_SNAP_PATH
 
 
 # A user wants to analyze the CDM particles in the first snapshot of the simulaton
@@ -13,7 +14,7 @@ import pytest
 # this snapshot.
 @pytest.fixture
 def dm_snap():
-    dm_snap = snapshot("tests/example_snaps/snap_000.hdf5", 1)
+    dm_snap = snapshot(CDM_TEST_SNAP_PATH + "snap_000.hdf5", 1)
     return dm_snap
 
 

@@ -55,7 +55,7 @@ class snapshot:
             if "BECDM" in f["Config"].attrs.keys():
                 self.fdm = True
                 self.N_cells = int(f["Config"].attrs["PMGRID"])
-                self.m_axion_Ev = f["Parameters"].attrs["AxionMassEv"] * u.eV
+                self.m_axion_ev = f["Parameters"].attrs["AxionMassEv"] * u.eV
 
             self.vel_unit = (
                 f["Parameters"].attrs["UnitVelocity_in_cm_per_s"] * u.cm / u.s
@@ -66,7 +66,7 @@ class snapshot:
             self.mass_unit = (f["Parameters"].attrs["UnitMass_in_g"] * u.g).to(u.Msun)
             self.time_unit = (self.length_unit / self.vel_unit).to(u.Gyr)
 
-            self.box_size = f["Header"].attrs["BoxSize"]
+            self.box_size = f["Header"].attrs["BoxSize"] * self.length_unit
             self.box_half = self.box_size / 2.0
             self.time = f["Header"].attrs["Time"] * self.time_unit
             self.N = f["Header"].attrs["NumPart_ThisFile"][ptype]
@@ -194,7 +194,7 @@ class snapshot:
         Parameters
         ----------
         indices : np.ndarray
-                field name
+                array of sorting indices, e.g., from numpy.argsort()
 
         """
         for field in self.data_fields.keys():
@@ -259,9 +259,6 @@ class snapshot:
                     "Non-FDM particle types do not contain wavefunction data!"
                 )
 
-            if (field == "Velocity") and (self.ptype == 1) and self.fdm:
-                self.data_fields[field] = self.get_FDM_velocities()
-
             # populate mass array from masstable or wavefunction if necessary
             if field == "Masses":
                 if (self.ptype == 1) and self.fdm:
@@ -283,43 +280,55 @@ class snapshot:
                             np.full(self.N, self.read_masstable()) * self.mass_unit
                         )
 
+            # FDM velocities are calculated from the wavefunction data
+            elif (field == "Velocities") and (self.ptype == 1) and self.fdm:
+                self.get_FDM_velocities()
+
             else:
                 self.data_fields[field] = (
                     self.read_field(field) * self.field_units[field]
                 )
 
-    def get_FDM_velocities(self) -> None:
+    def get_FDM_velocities(self) -> np.ndarray:
         """Calculates the FDM velocity field based on the wavefunction outputs,
         via the phase gradient method:
-        v = hbar/m gradient(phase). Based on code from Philip Mocz
+        v = hbar/m gradient(phase)
+        Based on code from Philip Mocz
+
+        Returns
+        -------
+        np.ndarray
+                FDM cell velocities
         """
 
-        self.load_particle_data(1, ["ParticleIDs", "Coordinates", "PsiRe", "PsiIm"])
+        self.load_particle_data(["ParticleIDs", "Coordinates", "PsiRe", "PsiIm"])
+        IDs = self.data_fields["ParticleIDs"].value
+        pos = self.data_fields["Coordinates"].value
+        psiRe = self.data_fields["PsiRe"].value
+        psiIm = self.data_fields["PsiIm"].value
 
         m = self.m_axion_ev / const.c**2
 
-        # reshape and sort arrays
-        IDs = self.data_fields["ParticleIDs"]
+        # sort all arrays in ID order, 
+        # which is the order the wavefunction is originally packed in
         IDsort = np.argsort(IDs)  # indices to sort the arrays in ID order
-        self.arrange_fields(IDsort)
 
-        # sort and reshape IDs and positions to their final forms
+        # sort and reshape IDs and positions to their final forms by reshaping to
+        # the box shape, then back to the snapshot shape in Fortran/Matlab order
         IDs = np.reshape(IDs, (self.N_cells, self.N_cells, self.N_cells), order="F")
         IDs = np.reshape(IDs, (self.N,), order="F")
-        # do the same with positions
-        pos = self.data_fields["Coordinates"]
+
+        pos = pos[IDsort, :]
         pos = np.reshape(pos, (self.N_cells, self.N_cells, self.N_cells, 3), order="F")
         dx = pos[0, 1, 0, 0] - pos[0, 0, 0, 0]  # cell spacing
 
-        pos_x = np.reshape(
-            pos[:, :, :, 0], (self.N, 1), order="F"
-        )  # reshape back to snapshot shape
+        pos_x = np.reshape(pos[:, :, :, 0], (self.N, 1), order="F")
         pos_y = np.reshape(pos[:, :, :, 1], (self.N, 1), order="F")
         pos_z = np.reshape(pos[:, :, :, 2], (self.N, 1), order="F")
         pos = np.concatenate([pos_x, pos_y, pos_z], axis=1)
 
         # get psi into a single complex number and reshape it to look like the box
-        psi = self.data_fields["psiRe"] + 1.0j * self.data_fields["psiIm"]
+        psi = psiRe + 1.0j * psiIm
         psi = psi[IDsort]
         psi = np.reshape(psi, (self.N_cells, self.N_cells, self.N_cells), order="F")
 
@@ -340,16 +349,18 @@ class snapshot:
         vz[vz <= -np.pi] = vz[vz <= -np.pi] + 2.0 * np.pi
 
         # calculate velocities
-        vx = (vx / (2.0 * dx) / m * const.hbar).to(self.vel_unit)
-        vy = (vy / (2.0 * dx) / m * const.hbar).to(self.vel_unit)
-        vz = (vz / (2.0 * dx) / m * const.hbar).to(self.vel_unit)
+        vx = (vx / (2.0 * dx * self.length_unit) / m * const.hbar).to(self.vel_unit)
+        vy = (vy / (2.0 * dx * self.length_unit) / m * const.hbar).to(self.vel_unit)
+        vz = (vz / (2.0 * dx * self.length_unit) / m * const.hbar).to(self.vel_unit)
 
-        # get velocities back into the same shape as they're output
-        vel_x = np.reshape(vx, (self.N, 1), order="F")  # reshape back to snapshot shape
+        # get velocities back into the snapshot shape
+        vel_x = np.reshape(vx, (self.N, 1), order="F")
         vel_y = np.reshape(vy, (self.N, 1), order="F")
         vel_z = np.reshape(vz, (self.N, 1), order="F")
 
         self.data_fields["Velocities"] = np.concatenate([vel_x, vel_y, vel_z], axis=1)
+        self.data_fields["ParticleIDs"] = IDs
+        self.data_fields["Coordinates"] = pos
 
     def read_all(self) -> None:
         """read_all wrapper to load all "standard" fields (IDs, pos, vel, mass)"""

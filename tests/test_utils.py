@@ -51,15 +51,23 @@ def test_get_vslice_indices() -> None:
 
     return None
 
-
-def test_get_snaps() -> None:
+# test get_snaps both with and without the trailing slash on the 
+# input path, since users may input either
+@pytest.mark.parametrize(
+    "input, expected",
+    [
+        (CDM_TEST_SNAP_PATH, np.array(
+            [CDM_TEST_SNAP_PATH + "snap_000.hdf5", CDM_TEST_SNAP_PATH + "snap_001.hdf5"]
+        )),
+        (CDM_TEST_SNAP_PATH[:-1], np.array(
+            [CDM_TEST_SNAP_PATH + "snap_000.hdf5", CDM_TEST_SNAP_PATH + "snap_001.hdf5"]
+        ))
+    ]
+)
+def test_get_snaps(input, expected) -> None:
     from snapanalysis.utils import get_snaps
 
-    expected = np.array(
-        [CDM_TEST_SNAP_PATH + "snap_000.hdf5", CDM_TEST_SNAP_PATH + "snap_001.hdf5"]
-    )
-
-    assert np.array_equal(get_snaps(CDM_TEST_SNAP_PATH), expected), (
+    assert np.array_equal(get_snaps(input), expected), (
         "Snapshot collection failed!"
     )
 

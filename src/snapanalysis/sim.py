@@ -1,6 +1,5 @@
 # Routines for analyzing an entire simulation at once
 # TODO: wrapper routine for multiprocessing
-# TODO: function for storing rotation matrices
 
 import numpy as np
 import astropy.units as u
@@ -170,7 +169,6 @@ def get_particle_orbit(
 ) -> Orbit:
     """
     Stores the orbit of a particle or particles throughout a simulation.
-    TODO: support loading precomputed centers and rotations
 
     Parameters
     ----------

@@ -1,16 +1,10 @@
 # E2E test for a workflow for extracting individual particle orbits from a simulation
 import numpy as np
 from astropy import units as u
-import pytest
-from tests.snap_unit_test import CDM_TEST_SNAP_PATH
+from tests.conftest import CDM_TEST_SNAP_PATH
 
 
-@pytest.fixture
-def temp_dir(tmp_path):
-    return tmp_path
-
-
-def test_orbit_workflow(temp_dir):
+def test_orbit_workflow(tmp_path):
     from snapanalysis.orbit import Orbit, read_orbit_from_file
     from snapanalysis.sim import get_particle_orbit
 
@@ -43,10 +37,10 @@ def test_orbit_workflow(temp_dir):
     assert orb.vel.unit == u.km / u.s
 
     # Finally, they save the orbit to a file
-    orb.save(temp_dir / "test_particle_orbits.pkl")
+    orb.save(tmp_path / "test_particle_orbits.pkl")
 
     # Later, they want to load the stored orbit file
-    orb_from_file = read_orbit_from_file(temp_dir / "test_particle_orbits.pkl")
+    orb_from_file = read_orbit_from_file(tmp_path / "test_particle_orbits.pkl")
 
     assert isinstance(orb_from_file, Orbit)
     assert orb == orb_from_file

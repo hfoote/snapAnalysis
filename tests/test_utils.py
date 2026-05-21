@@ -1,7 +1,7 @@
 # unit tests for the utility functions of snapAnalysis
 import numpy as np
 import pytest
-from tests.snap_unit_test import CDM_TEST_SNAP_PATH
+from tests.conftest import CDM_TEST_SNAP_PATH
 
 
 def test_com_define() -> None:

@@ -3,7 +3,7 @@
 import numpy as np
 from glob import glob
 import re
-
+from pathlib import Path
 
 def com_define(m: np.ndarray, pos: np.ndarray) -> np.ndarray:
     """com_define basic center-of-mass calculation
@@ -97,7 +97,8 @@ def get_snaps(dir: str, ext: str = ".hdf5", prefix: str = "snap_") -> np.ndarray
             Ordered list of snapshots
     """
 
-    snap_list = np.array(glob(dir + prefix + "*" + ext))
+    sim_dir = Path(dir)
+    snap_list = np.array(glob(str(sim_dir / (prefix + "*" + ext))))
     nsnaps = len(snap_list)
 
     if nsnaps == 0:

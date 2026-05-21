@@ -2,7 +2,7 @@
 import numpy as np
 from snapanalysis.sim import orbit_com, get_particle_orbit, get_alignment_rotations
 import pytest
-from tests.snap_unit_test import CDM_TEST_SNAP_PATH
+from tests.conftest import CDM_TEST_SNAP_PATH
 
 # expected particle orbit data
 PARTICLE_ORBIT_POS = np.array(

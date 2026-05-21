@@ -1,24 +1,15 @@
 # E2E tests for the functionality of snap objects
 # requires the example snapshots in CDM_TEST_SNAP_PATH
 
-from snapanalysis.snap import snapshot
+from snapanalysis import vis
 import astropy.units as u
 import numpy as np
-import os
-import pytest
-from tests.snap_unit_test import CDM_TEST_SNAP_PATH
-
 
 # A user wants to analyze the CDM particles in the first snapshot of the simulaton
 # stored in tests/example/snaps. They create a snapshot object using the DM particles in
 # this snapshot.
-@pytest.fixture
-def dm_snap():
-    dm_snap = snapshot(CDM_TEST_SNAP_PATH + "snap_000.hdf5", 1)
-    return dm_snap
 
-
-def test_CDM_workflow(dm_snap):
+def test_CDM_workflow(dm_snap, tmp_path):
     # They load the positions, velocities, and masses of the particles,
     dm_snap.read_all()
 
@@ -44,25 +35,21 @@ def test_CDM_workflow(dm_snap):
     )
 
     # and save a plot of the dm density within 10 kpc of the xy plane,
-    dm_snap.density_projection(
-        slice_width=10.0 * u.kpc, plot_name="tests/density_plot_test.png"
+    vis.density_projection(
+        dm_snap, slice_width=10.0 * u.kpc, plot_name=tmp_path / "density_plot_test.png"
     )
     # as well as the halo's density profile
-    dm_snap.density_profile(plot_name="tests/density_profile_test.png")
+    vis.density_profile(dm_snap, plot_name=tmp_path / "density_profile_test.png")
     # and anisotropy profile
-    dm_snap.anisotropy_profile(plot_name="tests/beta_profile_test.png")
+    vis.anisotropy_profile(dm_snap, plot_name=tmp_path / "beta_profile_test.png")
 
     # later, they decide to load the potential at the particle locations,
     dm_snap.load_particle_data(["Potential"])
     assert dm_snap.check_if_field_read("Potential")
 
     # and save a plot of the potential near the x-y plane as well.
-    dm_snap.potential_projection(
-        slice_width=10.0 * u.kpc, plot_name="tests/potential_plot_test.png"
+    vis.potential_projection(
+        dm_snap, 
+        slice_width=10.0 * u.kpc, 
+        plot_name=tmp_path / "potential_plot_test.png"
     )
-
-    # cleanup
-    os.remove("tests/density_plot_test.png")
-    os.remove("tests/density_profile_test.png")
-    os.remove("tests/beta_profile_test.png")
-    os.remove("tests/potential_plot_test.png")

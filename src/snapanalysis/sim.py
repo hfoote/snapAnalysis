@@ -102,6 +102,7 @@ def get_alignment_rotations(
     part_type: int,
     r_max: u.Quantity | None = None,
     out_file: None | str = None,
+    select_IDs: None | tuple = None,
     use_centers: None | str = None,
 ) -> np.ndarray:
     """
@@ -120,6 +121,9 @@ def get_alignment_rotations(
     out_file : None | str, optional
         If given as a string, saves the rotation matrices to a numpy
         binary file of this name, by default None
+    select_IDs : None or tuple, optional
+        min. and max. particle IDs for selection if desired, otherwise uses all
+        particles of the specified type.
     use_centers : None or str, optional
         Uses COM positions and velocities stored in the specified text file. If None,
         snapshots will be auto-centered before rotations are calculated
@@ -141,6 +145,9 @@ def get_alignment_rotations(
     for i, snap_name in enumerate(snap_names):
         s = snapshot(snap_name, part_type)
         s.load_particle_data(["Coordinates", "Velocities"])
+        
+        if select_IDs is not None:
+            s.select_particles(select_IDs)
 
         if use_centers is not None:
             s.apply_center(

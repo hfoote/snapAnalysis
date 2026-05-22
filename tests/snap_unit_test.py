@@ -180,6 +180,13 @@ def test_angular_momentum_alignment_is_consistent_with_manual_rotation(dm_snap):
     )
 
 
+def test_angular_momentun_alignment_with_max_radius(dm_snap):
+    dm_snap.align_angular_momentum()
+    J_vec = dm_snap.find_angular_momentum_direction(r_max=1000*u.kpc)
+
+    assert np.allclose(J_vec, np.array([0.0, 0.0, 1.0]))
+
+
 def test_density_points_returns_correct_central_density(dm_snap):
     k = 100
     central_density = dm_snap.density_points(np.zeros(3), k_max=k)[0].value

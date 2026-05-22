@@ -584,7 +584,7 @@ class snapshot:
         vel = self.data_fields["Velocities"]
 
         if r_max is not None:
-            r = np.sqrt(np.sum(pos**2), axis=1)
+            r = np.sqrt(np.sum(pos**2, axis=1))
             idx = np.where(r <= r_max)
             pos = pos[idx]
             vel = vel[idx]

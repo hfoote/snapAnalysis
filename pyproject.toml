@@ -41,5 +41,5 @@ Issues = "https://github.com/hfoote/snapAnalysis/issues"
 select = ["E", "F"]
 exclude = [
     "tutorials/*",
-    "docs/source/tutorials/*,
+    "docs/source/tutorials/*",
 ]

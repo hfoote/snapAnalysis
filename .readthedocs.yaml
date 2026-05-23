@@ -34,4 +34,5 @@ python:
   install:
     - method: uv
       command: sync
-      args: ["--dev"]
+      groups:
+        - dev

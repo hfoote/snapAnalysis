@@ -40,10 +40,11 @@ python -m pip install .
 ## Tutorials
 Tutorial notebooks are available in the [tutorials folder](/tutorials/). I also encourage you to look through the test suite for further examples of how to use `snapAnalysis`.
 
+## Documentation
+Our documentation is hosted on ReadTheDocs here: [https://snapanalysis.readthedocs.io/en/latest/]
 
 ## Issues and Contributing
 Please see the [contribution guidelines](/CONTRIBUTING.md). 
-
 
 ## Acknowledgement
 If you use `snapAnalysis` as part of a published work, we request that you include the URL of this repository (https://github.com/hfoote/snapAnalysis) as a footnote upon the first mention of `snapAnalysis` in the text, and/or as part of your software acknowledgements. 

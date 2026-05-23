@@ -1,3 +1,5 @@
+.. _home:
+
 .. snapAnalysis documentation master file, created by
    sphinx-quickstart on Fri May 22 16:15:06 2026.
    You can adapt this file completely to your liking, but it should at least
@@ -11,7 +13,7 @@
 ``snapAnalysis`` supports many common workflows for handling snapshots, including particle loading, particle filtering, centering, rotations, coordinate transformations, galaxy shape analysis, particle orbit extraction, galaxy center-of-mass orbit extraction, and more. Also included are a few basic visualization functions for plotting density and potential fields, density and anisotropy profiles, and more. Units are detected automatically from snapshot headers and handled using astropy's units module. 
 
 .. note::
-   ``snapAnalysis`` is still in early development. We encourage contributions following `our guidelines <https://github.com/hfoote/snapAnalysis/blob/main/CONTRIBUTING.md>`__
+   ``snapAnalysis`` is still in early development. We encourage contributions following `our guidelines <https://github.com/hfoote/snapAnalysis/blob/main/CONTRIBUTING.md>`__.
 
 Contents
 --------
@@ -19,7 +21,7 @@ Contents
    :maxdepth: 2
    :caption: Contents:
 
-   Installation <installation.rst>
-   Tutorials <tutorials/index>
-   API Reference <api/index>
+   Installation <installation>
+   Tutorials <tutorials/tutorials>
+   User Guide <api/modules>
 

@@ -14,12 +14,13 @@ on:
       - "test-release"
   workflow_dispatch: 
 
+permissions:
+  contents: read
+  id-token: write
+
 jobs:
   release-build:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      id-token: write
 
     steps:
       - uses: actions/checkout@v6

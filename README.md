@@ -19,6 +19,11 @@ and upgrade pip if needed
 pip install --upgrade pip
 ```
 
+### With `pip` via PyPI
+```bash
+pip install snapanalysis
+```
+
 ### From Source
 NOTE: If you intend to develop/contribute to `snapAnalysis`, please use the [development install instructions](/CONTRIBUTING.md#contributing-code). 
 1. Clone this repository:

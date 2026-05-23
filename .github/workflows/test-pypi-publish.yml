@@ -9,6 +9,9 @@
 name: Publish Python Package to Test-PyPI
 
 on:
+  push:
+    tags: 
+      - "test-release"
   workflow_dispatch: 
 
 jobs:

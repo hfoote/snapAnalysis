@@ -15,6 +15,25 @@
 .. note::
    ``snapAnalysis`` is still in early development. We encourage contributions following `our guidelines <https://github.com/hfoote/snapAnalysis/blob/main/CONTRIBUTING.md>`__.
 
+Acknowledgement
+---------------
+
+If you use ``snapAnalysis`` as part of a published work, we request that you cite the `Zenodo record <https://doi.org/10.5281/zenodo.20386578>`_ for the version of the source code that you used:
+
+.. code-block:: bibtex
+   
+   @software{foote_snapanalysis_2026,
+      author       = {Hayden R. Foote},
+      title        = {hfoote/snapAnalysis: Version 0.1.1},
+      month        = may,
+      year         = 2026,
+      publisher    = {Zenodo},
+      version      = {v0.1.1},
+      doi          = {10.5281/zenodo.20386578},
+      url          = {https://doi.org/10.5281/zenodo.20386578},
+   }
+
+
 Contents
 --------
 .. toctree::

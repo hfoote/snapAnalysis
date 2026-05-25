@@ -41,10 +41,24 @@ python -m pip install .
 Tutorial notebooks are available in the [tutorials folder](/tutorials/). I also encourage you to look through the test suite for further examples of how to use `snapAnalysis`.
 
 ## Documentation
-Our documentation is hosted on ReadTheDocs here: [https://snapanalysis.readthedocs.io/en/latest/]
+Our documentation is hosted on ReadTheDocs here: https://snapanalysis.readthedocs.io/en/latest/
 
 ## Issues and Contributing
 Please see the [contribution guidelines](/CONTRIBUTING.md). 
 
 ## Acknowledgement
-If you use `snapAnalysis` as part of a published work, we request that you include the URL of this repository (https://github.com/hfoote/snapAnalysis) as a footnote upon the first mention of `snapAnalysis` in the text, and/or as part of your software acknowledgements. 
+[![DOI](https://zenodo.org/badge/888027171.svg)](https://doi.org/10.5281/zenodo.20386577)
+If you use `snapAnalysis` as part of a published work, we request that you cite the [Zenodo record](https://doi.org/10.5281/zenodo.20386577) for the version of the source code that you used:
+
+```
+@software{foote_snapanalysis_2026,
+  author       = {Hayden R. Foote},
+  title        = {hfoote/snapAnalysis: Version 0.1.1},
+  month        = may,
+  year         = 2026,
+  publisher    = {Zenodo},
+  version      = {v0.1.1},
+  doi          = {10.5281/zenodo.20386578},
+  url          = {https://doi.org/10.5281/zenodo.20386578},
+}
+```

@@ -24,8 +24,10 @@ uv sync --dev
 
 When developing `snapAnalysis`, please continue to use `uv` for dependency and environment management according to their [documentation](https://docs.astral.sh/uv/).
 
-Additional Note (Optional): If you have already loaded a python environment, and you would like uv to target that pre-loaded environment for installation, please use the --active flag:
+Additional Note (Optional): If you have already loaded a python environment, and you would like `uv` to target that pre-loaded environment for installation, please use the `--active` flag:
+```bash
 uv sync --active --dev
+```
 
 **Before submitting a PR**, please ensure that you have added tests for your code in the [tests folder](/tests/), and that the entire test suite and linter checks pass.
 ```bash

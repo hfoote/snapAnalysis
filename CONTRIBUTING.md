@@ -28,6 +28,7 @@ Additional Note (Optional): If you have already loaded a python environment, and
 ```bash
 uv sync --active --dev
 ```
+Targeting `uv` to a specific environment is NOT recommended unless absolutely necessary, as it could cause unwanted effects on your pre-loaded python environment.
 
 **Before submitting a PR**, please ensure that you have added tests for your code in the [tests folder](/tests/), and that the entire test suite and linter checks pass.
 ```bash
